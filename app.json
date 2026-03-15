@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Orca",
-    "slug": "Orca",
+    "name": "Energy Broker",
+    "slug": "energy-broker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "Orca",
+    "scheme": "energy-broker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -21,6 +21,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -32,7 +33,8 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

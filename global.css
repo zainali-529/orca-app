@@ -3,56 +3,80 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 63%;
-    --radius: 0.625rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+
+    /* ── Global font — Poppins for entire app ────────────────── */
+  * {
+    font-family: 'Poppins', 'Poppins_400Regular', sans-serif;
   }
 
+  /* ── Light mode ──────────────────────────────────────────── */
+  :root {
+    --background:          0 0% 100%;       /* #FFFFFF — pure white */
+    --foreground:          210 24% 12%;     /* #162030 — near-black with navy tint */
+
+    --card:                0 0% 100%;       /* #FFFFFF */
+    --card-foreground:     210 24% 12%;
+
+    --popover:             0 0% 100%;
+    --popover-foreground:  210 24% 12%;
+
+    --primary:             205 72% 35%;     /* #2272A6 — brand blue */
+    --primary-foreground:  210 40% 98%;     /* near white */
+
+    --secondary:           210 20% 95%;     /* #EFF3F7 — cool light grey */
+    --secondary-foreground: 210 24% 20%;
+
+    --muted:               210 20% 95%;     /* #EFF3F7 */
+    --muted-foreground:    210 18% 46%;     /* #637A90 */
+
+    --accent:              205 60% 92%;     /* #D6EAF6 — soft blue tint */
+    --accent-foreground:   205 72% 25%;
+
+    --destructive:         0 84% 60%;
+    --border:              210 22% 88%;     /* #D5DEE8 — cool grey border */
+    --input:               210 22% 88%;
+    --ring:                205 72% 45%;     /* brand blue ring */
+    --radius:              0.625rem;
+  }
+
+  /* ── Dark mode — Premium navy/charcoal, NOT pure black ──── */
+  /*
+   * Philosophy:
+   *   background   = darkest surface  (#0E1923 — deep navy-charcoal)
+   *   card         = one step up       (#132030 — slightly lighter)
+   *   popover      = one more step     (#1A2A3D — elevated surface)
+   *   border       = subtle separator  (low opacity white on navy)
+   *   foreground   = warm white        (#E8F0F8 — not harsh pure white)
+   *   muted-fg     = readable muted    (#7A9AB8 — navy-tinted grey)
+   *
+   * Every surface has a navy undertone that ties back to brand #0D2C40.
+   */
   .dark:root {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 70.9% 59.4%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 300 0% 45%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background:          210 30% 10%;     /* #0E1923 — deep navy-charcoal */
+    --foreground:          210 30% 92%;     /* #D9E8F5 — warm off-white */
+
+    --card:                210 28% 13%;     /* #132030 — card surface */
+    --card-foreground:     210 30% 92%;
+
+    --popover:             210 28% 16%;     /* #1A2A3D — elevated popup */
+    --popover-foreground:  210 30% 92%;
+
+    --primary:             205 65% 52%;     /* #3D9DD4 — brighter blue in dark */
+    --primary-foreground:  210 30% 10%;     /* dark bg for text on blue */
+
+    --secondary:           210 25% 18%;     /* #1E2E3F — subtle secondary surface */
+    --secondary-foreground: 210 28% 80%;    /* #AABFD6 */
+
+    --muted:               210 25% 16%;     /* #192636 — muted surface */
+    --muted-foreground:    210 20% 55%;     /* #6E8FA8 — readable muted text */
+
+    --accent:              205 40% 20%;     /* #1D3348 — blue-tinted accent */
+    --accent-foreground:   205 65% 75%;     /* #7DC0E8 */
+
+    --destructive:         0 65% 55%;       /* slightly desaturated red for dark */
+    --border:              210 25% 20%;     /* #1E2E3F — subtle border */
+    --input:               210 25% 18%;     /* #1A2736 — input bg */
+    --ring:                205 65% 52%;     /* matches primary */
+    --radius:              0.625rem;
   }
 }
