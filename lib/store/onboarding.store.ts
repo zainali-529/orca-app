@@ -14,8 +14,8 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
 
   checkOnboarding: async () => {
     const val = await SecureStore.getItemAsync(ONBOARDING_KEY);
-    set({ hasSeenOnboarding: null ?? false }); // force false for testing
-    // set({ hasSeenOnboarding: val === 'true' });
+    // set({ hasSeenOnboarding: null ?? false });
+    set({ hasSeenOnboarding: val === 'true' });
   },
 
   completeOnboarding: async () => {

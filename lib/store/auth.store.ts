@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 import { loginApi, logoutApi, getMeApi, registerApi } from '@/lib/api/auth.api';
-import { TOKEN_KEYS } from '@/lib/api';
+import { TOKEN_KEYS } from '@/lib/api-instance';
 import type { LoginPayload, RegisterPayload, User } from '@/lib/types/auth.types';
 
 interface AuthState {

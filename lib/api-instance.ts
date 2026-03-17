@@ -3,7 +3,8 @@ import * as SecureStore from 'expo-secure-store';
 
 // ── Change this to your backend URL ───────────────────────
 export const API_BASE_URL = __DEV__
-  ? 'http://192.168.0.101:5000'   // <- Replace with your local IP (run: ipconfig / ifconfig)
+  ? 'http://192.168.0.111:5000'   
+  // ? 'https://flighty-spindliest-ivory.ngrok-free.dev'
   : 'https://your-production-url.railway.app';
 
 // ── Token keys in SecureStore ──────────────────────────────
