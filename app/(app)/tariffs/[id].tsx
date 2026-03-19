@@ -89,7 +89,7 @@ export default function TariffDetailScreen() {
   const t = selectedTariff;
 
   const UK_AVG_ELEC = 2900;
-  const UK_AVG_GAS  = 11500;
+  const UK_AVG_GAS = 11500;
   const elecCost = t.electricity?.unitRate
     ? Math.round((t.electricity.unitRate / 100) * UK_AVG_ELEC + (t.electricity.standingCharge! / 100) * 365)
     : null;
@@ -300,6 +300,15 @@ export default function TariffDetailScreen() {
             ))}
           </View>
         )}
+
+        <Pressable
+          onPress={() => router.push(`/(app)/quotes/create?tariffId=${t._id}` as any)}  
+          className="bg-primary h-12 rounded-card items-center justify-center my-3"
+        >
+          <Text style={{ color: '#ffffff' }} className="text-base font-bold">
+            ⚡ Request Quote for This Tariff
+          </Text>
+        </Pressable>
 
         {/* ── Disclaimer ────────────────────────────────────────────── */}
         <View className="bg-primary/6 dark:bg-brand-selected rounded-banner p-3 border border-border">
