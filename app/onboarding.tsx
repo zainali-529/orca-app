@@ -21,9 +21,9 @@ import Svg, {
   Stop,
 } from 'react-native-svg';
 
-const { width: W, height: H } = Dimensions.get('window');
+const { height: H } = Dimensions.get('window');
 
-// ── Brand palette — FIXED, never flips (illustration bg area) ──
+// ── Brand palette — FIXED, never flips ───────────────────────
 const B = {
   navy:     '#0D2C40',
   navyDark: '#091F2E',
@@ -37,10 +37,10 @@ const B = {
   white:    '#FFFFFF',
 };
 
-// ── Theme tokens — bottom card adapts to light/dark mode ──────
+// ── Theme tokens — bottom card adapts to light/dark ──────────
 const THEME = {
   dark: {
-    cardBg:      '#091F2E',   // deep navy card
+    cardBg:      '#091F2E',
     cardBorder:  '#1E3A52',
     title:       '#F0F8FF',
     subtitle:    '#7AAEC8',
@@ -57,13 +57,12 @@ const THEME = {
     featureBdr:  '#1E3A52',
     featureText: '#F0F8FF',
     dotInactive: '#7AAEC8',
-    skipText:    '#7AAEC8',
     signInText:  '#7AAEC8',
   },
   light: {
     cardBg:      '#FFFFFF',
     cardBorder:  '#D5DEE8',
-    title:       '#0D2C40',   // brand navy — strong contrast on white
+    title:       '#0D2C40',
     subtitle:    '#4A6A82',
     tagBg:       '#2272A615',
     tagBorder:   '#2272A630',
@@ -78,15 +77,13 @@ const THEME = {
     featureBdr:  '#C8DCE9',
     featureText: '#0D2C40',
     dotInactive: '#A8C4D4',
-    skipText:    '#4A6A82',
     signInText:  '#4A6A82',
   },
 };
 
 // ─────────────────────────────────────────────────────────────
-// ILLUSTRATIONS
-// All illustrations receive the isDark prop so they can
-// adapt their card elements (while SVG brand elements stay fixed)
+// ILLUSTRATIONS — always rendered on brand navy (isDark = true)
+// Colors come from THEME/B objects, kept as style props
 // ─────────────────────────────────────────────────────────────
 
 function Illustration1({ isDark }: { isDark: boolean }) {
@@ -146,9 +143,9 @@ function Illustration2({ isDark }: { isDark: boolean }) {
   }));
 
   const rows = [
-    { name: 'British Gas',  price: '£1,240/yr', highlight: false },
-    { name: 'EDF Energy',   price: '£1,190/yr', highlight: false },
-    { name: 'Octopus',      price: '£1,095/yr', highlight: true  },
+    { name: 'British Gas', price: '£1,240/yr', highlight: false },
+    { name: 'EDF Energy',  price: '£1,190/yr', highlight: false },
+    { name: 'Octopus',     price: '£1,095/yr', highlight: true  },
   ];
 
   return (
@@ -160,8 +157,7 @@ function Illustration2({ isDark }: { isDark: boolean }) {
         <View key={i} style={{
           width: 240, height: 52,
           backgroundColor: r.highlight ? T.rowHighBg : T.rowBg,
-          borderRadius: 12,
-          borderWidth: 1,
+          borderRadius: 12, borderWidth: 1,
           borderColor: r.highlight ? T.rowHighBdr : T.rowBorder,
           flexDirection: 'row', alignItems: 'center',
           paddingHorizontal: 16, justifyContent: 'space-between',
@@ -182,8 +178,7 @@ function Illustration2({ isDark }: { isDark: boolean }) {
         </View>
       ))}
       <View style={{
-        backgroundColor: T.tagBg,
-        borderWidth: 1, borderColor: T.tagBorder,
+        backgroundColor: T.tagBg, borderWidth: 1, borderColor: T.tagBorder,
         borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, marginTop: 4,
       }}>
         <Text style={{ color: T.tagText, fontSize: 11, fontWeight: '700' }}>
@@ -238,8 +233,8 @@ function Illustration3({ isDark }: { isDark: boolean }) {
         {stats.map((s, i) => (
           <View key={i} style={{
             alignItems: 'center',
-            backgroundColor: T.statBg,
-            borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+            backgroundColor: T.statBg, borderRadius: 10,
+            paddingHorizontal: 14, paddingVertical: 10,
             borderWidth: 1, borderColor: T.statBorder,
           }}>
             <Text style={{ color: B.blueBrt, fontSize: 15, fontWeight: '700' }}>{s.value}</Text>
@@ -267,10 +262,10 @@ function Illustration4({ isDark }: { isDark: boolean }) {
   }));
 
   const features = [
-    { icon: '⚡', label: 'Tariff comparison'     },
-    { icon: '📄', label: 'PDF quotes & e-sign'   },
-    { icon: '🔄', label: 'Switch tracker'         },
-    { icon: '💳', label: 'Payments & commission'  },
+    { icon: '⚡', label: 'Tariff comparison'    },
+    { icon: '📄', label: 'PDF quotes & e-sign'  },
+    { icon: '🔄', label: 'Switch tracker'        },
+    { icon: '💳', label: 'Payments & commission' },
   ];
 
   return (
@@ -328,7 +323,7 @@ function Dot({ active, isDark }: { active: boolean; isDark: boolean }) {
   );
 }
 
-// ── Slides ────────────────────────────────────────────────────
+// ── Slides data ───────────────────────────────────────────────
 
 const SLIDES = [
   {
@@ -374,8 +369,8 @@ export default function OnboardingScreen() {
   const animateIn = () => {
     contentOpacity.value = 0;
     contentY.value       = 14;
-    contentOpacity.value = withDelay(60, withTiming(1,   { duration: 380 }));
-    contentY.value       = withDelay(60, withSpring(0,   { damping: 18 }));
+    contentOpacity.value = withDelay(60, withTiming(1, { duration: 380 }));
+    contentY.value       = withDelay(60, withSpring(0,  { damping: 18 }));
   };
 
   const goNext = () => {
@@ -400,37 +395,42 @@ export default function OnboardingScreen() {
   const { Illustration } = SLIDES[currentIndex];
 
   return (
-    <View style={{ flex: 1, backgroundColor: B.navy }}>
-      {/* StatusBar: always light on brand navy top, auto on card area */}
+    // bg-brand = #0D2C40 — fixed navy, never flips
+    <View className="flex-1 bg-brand">
       <StatusBar barStyle="light-content" backgroundColor={B.navy} />
 
-      {/* Skip */}
+      {/* Skip button */}
       {!isLast && (
         <Pressable
           onPress={handleDone}
-          style={{ position: 'absolute', top: 54, right: 24, zIndex: 10, padding: 8 }}>
+          className="absolute top-[54px] right-6 z-10 p-2"
+        >
           <Text style={{ color: B.fgMuted, fontSize: 14, fontWeight: '500' }}>Skip</Text>
         </Pressable>
       )}
 
-      {/* ── Top: brand navy background + illustration ── */}
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 }}>
+      {/* ── Top: illustration area — always on brand navy ── */}
+      <View className="flex-1 items-center justify-center pt-12">
         <Illustration key={currentIndex} isDark={true} />
-        {/* Illustrations always render on brand navy, so always dark */}
       </View>
 
-      {/* ── Bottom: theme-aware card ── */}
-      <Animated.View style={[{
-        backgroundColor: T.cardBg,
-        borderTopLeftRadius: 28,
-        borderTopRightRadius: 28,
-        paddingHorizontal: 28,
-        paddingTop: 32,
-        paddingBottom: 44,
-        minHeight: H * 0.42,
-        borderTopWidth: 1,
-        borderColor: T.cardBorder,
-      }, contentStyle]}>
+      {/* ── Bottom: theme-aware card ──
+          Colors come from THEME (T) object so style prop is required.
+          Animated.View also needs style for animation values.            */}
+      <Animated.View style={[
+        contentStyle,
+        {
+          backgroundColor:    T.cardBg,
+          borderTopLeftRadius:  28,
+          borderTopRightRadius: 28,
+          paddingHorizontal:  28,
+          paddingTop:         32,
+          paddingBottom:      44,
+          minHeight:          H * 0.42,
+          borderTopWidth:     1,
+          borderColor:        T.cardBorder,
+        },
+      ]}>
 
         {/* Tag */}
         <View style={{
@@ -444,53 +444,53 @@ export default function OnboardingScreen() {
           </Text>
         </View>
 
-        {/* Title */}
-        <Text style={{ color: T.title, fontSize: 28, fontWeight: '700', lineHeight: 36, marginBottom: 12 }}>
+        {/* Title — fontSize: 28 / lineHeight: 36, no Tailwind step, kept as style */}
+        <Text style={{
+          color: T.title, fontSize: 28, fontWeight: '700',
+          lineHeight: 36, marginBottom: 12,
+          fontFamily: 'Poppins-Bold',
+        }}>
           {SLIDES[currentIndex].title}
         </Text>
 
         {/* Subtitle */}
-        <Text style={{ color: T.subtitle, fontSize: 14, lineHeight: 22, marginBottom: 30 }}>
+        <Text style={{
+          color: T.subtitle, fontSize: 14, lineHeight: 22,
+          marginBottom: 30, fontFamily: 'Poppins',
+        }}>
           {SLIDES[currentIndex].subtitle}
         </Text>
 
         {/* Dots + CTA row */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View className="flex-row items-center justify-between">
 
-          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+          {/* Dots */}
+          <View className="flex-row gap-1.5 items-center">
             {SLIDES.map((_, i) => (
               <Dot key={i} active={i === currentIndex} isDark={isDark} />
             ))}
           </View>
 
-          {/* Next / Get Started button
-              - Uses a stable View inside Pressable for reliable row layout
-              - backgroundColor uses B.blue which is hardcoded — never affected by theme
-              - In light mode the card is white, so the blue button is clearly visible
-              - The icon sits beside the text because the inner View is flexDirection row
-          */}
+          {/* Next / Get Started */}
           <Pressable onPress={goNext}>
             {({ pressed }) => (
               <View style={{
-                backgroundColor: pressed ? B.blueDim : B.blue,
+                backgroundColor:  pressed ? B.blueDim : B.blue,
                 paddingHorizontal: isLast ? 26 : 20,
-                paddingVertical: 13,
-                borderRadius: 50,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                // Subtle shadow so button pops on both white and dark card
-                shadowColor: B.blue,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDark ? 0 : 0.25,
-                shadowRadius: 6,
-                elevation: isDark ? 0 : 3,
+                paddingVertical:   13,
+                borderRadius:      50,
+                flexDirection:     'row',
+                alignItems:        'center',
+                gap:               6,
+                shadowColor:       B.blue,
+                shadowOffset:      { width: 0, height: 2 },
+                shadowOpacity:     isDark ? 0 : 0.25,
+                shadowRadius:      6,
+                elevation:         isDark ? 0 : 3,
               }}>
                 <Text style={{
-                  color: B.white,
-                  fontSize: 14,
-                  fontWeight: '700',
-                  fontFamily: 'Poppins-Bold',
+                  color: B.white, fontSize: 14,
+                  fontWeight: '700', fontFamily: 'Poppins-Bold',
                 }}>
                   {isLast ? 'Get Started' : 'Next'}
                 </Text>
@@ -505,12 +505,10 @@ export default function OnboardingScreen() {
           </Pressable>
         </View>
 
-        {/* Sign in — last slide */}
+        {/* Sign in link — last slide only */}
         {isLast && (
-          <Pressable
-            onPress={handleDone}
-            style={{ alignItems: 'center', marginTop: 18 }}>
-            <Text style={{ color: T.signInText, fontSize: 13 }}>
+          <Pressable onPress={handleDone} className="items-center mt-[18px]">
+            <Text style={{ color: T.signInText, fontSize: 13, fontFamily: 'Poppins' }}>
               Already have an account?{' '}
               <Text style={{ color: B.blueBrt, fontWeight: '600' }}>Sign in</Text>
             </Text>

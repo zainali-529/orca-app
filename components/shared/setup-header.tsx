@@ -17,14 +17,16 @@ interface SetupHeaderProps {
   onBack?:     () => void;
 }
 
+// Brand colors — fixed, never flip (rendered on navy bg)
 const B = {
   navy:    '#0D2C40',
   blue:    '#2272A6',
   blueBrt: '#3D9DD4',
   fg:      '#F0F8FF',
   fgMuted: '#7AAEC8',
-  border:  '#1E3A52',
 };
+
+// ─── Step dot ─────────────────────────────────────────────────────────────────
 
 function StepDot({ index, current }: { index: number; current: number }) {
   const done   = index < current - 1;
@@ -37,19 +39,20 @@ function StepDot({ index, current }: { index: number; current: number }) {
       : withTiming(1, { duration: 200 });
   }, [active]);
 
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   return (
-    <Animated.View style={style}>
+    <Animated.View style={animStyle}>
+      {/* width animated (28 active / 20 inactive) — kept as style prop */}
       <View style={{
-        width: active ? 28 : 20,
-        height: 20,
-        borderRadius: 10,
+        width:           active ? 28 : 20,
+        height:          20,
+        borderRadius:    10,
         backgroundColor: done || active ? B.blue : `${B.blue}30`,
-        borderWidth: 1,
-        borderColor: done || active ? B.blueBrt : `${B.blue}40`,
-        alignItems: 'center',
-        justifyContent: 'center',
+        borderWidth:     1,
+        borderColor:     done || active ? B.blueBrt : `${B.blue}40`,
+        alignItems:      'center',
+        justifyContent:  'center',
       }}>
         {done ? (
           <Svg width="10" height="10" viewBox="0 0 10 10">
@@ -66,6 +69,8 @@ function StepDot({ index, current }: { index: number; current: number }) {
   );
 }
 
+// ─── Setup header ─────────────────────────────────────────────────────────────
+
 export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }: SetupHeaderProps) {
   const progressWidth = useSharedValue(0);
 
@@ -77,13 +82,8 @@ export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }
     width: `${progressWidth.value}%`,
   }));
 
-  // ── Safe back navigation — never crashes ──────────────────
   const handleBack = () => {
-    if (onBack) {
-      onBack();
-      return;
-    }
-    // Fallback: go back only if possible, otherwise go to step-1
+    if (onBack) { onBack(); return; }
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -92,18 +92,16 @@ export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }
   };
 
   return (
-    <View style={{
-      backgroundColor: B.navy,
-      paddingHorizontal: 24,
-      paddingTop: 56,
-      paddingBottom: 32,
-    }}>
+    // bg-brand = #0D2C40 — fixed navy, never flips
+    // pt-14 = 56px, pb-8 = 32px, px-6 = 24px  (Tailwind defaults)
+    <View className="bg-brand px-6 pt-14 pb-8">
 
       {/* Back button */}
       <Pressable
         onPress={handleBack}
         hitSlop={12}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 }}>
+        className="flex-row items-center gap-1.5 mb-5"
+      >
         <Svg width="16" height="16" viewBox="0 0 24 24">
           <Path d="M15 18l-6-6 6-6" fill="none" stroke={B.fgMuted}
             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -111,44 +109,39 @@ export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }
         <Text style={{ color: B.fgMuted, fontSize: 14, fontFamily: 'Poppins' }}>Back</Text>
       </Pressable>
 
-      {/* Step dots */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 }}>
+      {/* Step dots row */}
+      <View className="flex-row items-center gap-1.5 mb-5">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <React.Fragment key={i}>
             <StepDot index={i} current={currentStep} />
             {i < totalSteps - 1 && (
+              // Connector line between dots
               <View style={{ flex: 1, height: 1, backgroundColor: `${B.blue}30` }} />
             )}
           </React.Fragment>
         ))}
       </View>
 
-      {/* Progress bar */}
-      <View style={{
-        height: 3,
-        backgroundColor: `${B.blue}25`,
-        borderRadius: 2,
-        marginBottom: 20,
-        overflow: 'hidden',
-      }}>
-        <Animated.View style={[{
-          height: '100%',
-          backgroundColor: B.blue,
-          borderRadius: 2,
-        }, barStyle]} />
+      {/* Progress bar track */}
+      <View
+        className="mb-5 rounded-sm overflow-hidden"
+        style={{ height: 3, backgroundColor: `${B.blue}25` }}
+      >
+        {/* Animated fill — width animated so style prop required */}
+        <Animated.View
+          style={[barStyle, { height: '100%', backgroundColor: B.blue, borderRadius: 2 }]}
+        />
       </View>
 
       {/* Step badge */}
-      <View style={{
-        alignSelf: 'flex-start',
-        backgroundColor: `${B.blue}22`,
-        borderWidth: 1,
-        borderColor: `${B.blue}44`,
-        borderRadius: 20,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-        marginBottom: 10,
-      }}>
+      <View
+        className="self-start rounded-full px-2.5 py-1 mb-2.5"
+        style={{
+          backgroundColor: `${B.blue}22`,
+          borderWidth:      1,
+          borderColor:      `${B.blue}44`,
+        }}
+      >
         <Text style={{
           color: B.blueBrt, fontSize: 10, fontWeight: '700',
           letterSpacing: 1, fontFamily: 'Poppins-Bold',
@@ -157,12 +150,15 @@ export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }
         </Text>
       </View>
 
+      {/* Title — fontSize: 24 = text-2xl, lineHeight: 32 kept as style */}
       <Text style={{
         color: B.fg, fontSize: 24, fontWeight: '700',
         lineHeight: 32, fontFamily: 'Poppins-Bold', marginBottom: 4,
       }}>
         {title}
       </Text>
+
+      {/* Subtitle — fontSize: 14 = text-sm, lineHeight: 20 kept as style */}
       <Text style={{ color: B.fgMuted, fontSize: 14, lineHeight: 20, fontFamily: 'Poppins' }}>
         {subtitle}
       </Text>

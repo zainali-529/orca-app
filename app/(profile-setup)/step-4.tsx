@@ -4,7 +4,6 @@ import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
 import { useProfileStore } from '@/lib/store/profile.store';
 import { router } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -16,38 +15,64 @@ const TARIFF_TYPES = [
   { id: 'unknown',  label: 'Not sure' },
 ];
 
-function SectionToggle({ label, icon, enabled, onToggle, isDark }: {
-  label: string; icon: string; enabled: boolean; onToggle: () => void; isDark: boolean;
+// ─── Section toggle row (Electricity / Gas) ───────────────────────────────────
+
+function SectionToggle({
+  label,
+  icon,
+  enabled,
+  onToggle,
+}: {
+  label: string;
+  icon: string;
+  enabled: boolean;
+  onToggle: () => void;
 }) {
   return (
     <Pressable onPress={onToggle}>
-      <View style={{
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        padding: 14, borderRadius: 12,
-        backgroundColor: enabled
-          ? isDark ? '#1A3A54' : '#EDF5FB'
-          : isDark ? '#132030' : '#FFFFFF',
-        borderWidth: 1,
-        borderColor: enabled ? '#2272A6' : isDark ? '#1E3A52' : '#E5EDF3',
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      {/* p-3.5 = 14px  (Tailwind default › 3.5 × 4px) */}
+      <View
+        className={[
+          'flex-row items-center justify-between p-3.5 rounded-xl border',
+          enabled
+            ? 'border-primary bg-primary/7 dark:bg-brand-selected/15'
+            : 'border-border bg-card',
+        ].join(' ')}
+      >
+        {/* Icon + label */}
+        <View className="flex-row items-center gap-2.5">
           <Text style={{ fontSize: 18 }}>{icon}</Text>
-          <Text style={{
-            color: enabled ? '#2272A6' : isDark ? '#F0F8FF' : '#0D2C40',
-            fontSize: 14, fontWeight: '600', fontFamily: 'Poppins-SemiBold',
-          }}>{label}</Text>
+          {/* text-sm = 14px / 20px lh  (config › fontSize.sm) */}
+          <Text
+            className={[
+              'text-sm font-semibold',
+              enabled ? 'text-primary' : 'text-brand dark:text-brand-fg',
+            ].join(' ')}
+          >
+            {label}
+          </Text>
         </View>
-        <View style={{
-          width: 22, height: 22, borderRadius: 11,
-          backgroundColor: enabled ? '#2272A6' : 'transparent',
-          borderWidth: enabled ? 0 : 1.5,
-          borderColor: isDark ? '#1E3A52' : '#C8DCE9',
-          alignItems: 'center', justifyContent: 'center',
-        }}>
+
+        {/* Check circle
+            w-5.5 h-5.5 = 22px  (config › spacing.5.5)
+            borderWidth 1.5 unchecked — kept as style prop                */}
+        <View
+          className={[
+            'w-5.5 h-5.5 rounded-full items-center justify-center',
+            enabled ? 'bg-primary' : 'border-border',
+          ].join(' ')}
+          style={{ borderWidth: enabled ? 0 : 1.5 }}
+        >
           {enabled && (
             <Svg width="12" height="12" viewBox="0 0 12 12">
-              <Path d="M2 6l3 3 5-5" fill="none" stroke="#fff"
-                strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <Path
+                d="M2 6l3 3 5-5"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </Svg>
           )}
         </View>
@@ -56,37 +81,55 @@ function SectionToggle({ label, icon, enabled, onToggle, isDark }: {
   );
 }
 
-function TariffChips({ selected, onSelect, isDark }: {
-  selected: string; onSelect: (v: string) => void; isDark: boolean;
+// ─── Tariff type chips ────────────────────────────────────────────────────────
+
+function TariffChips({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (v: string) => void;
 }) {
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      {TARIFF_TYPES.map((t) => (
-        <Pressable key={t.id} onPress={() => onSelect(t.id)}>
-          <View style={{
-            paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-            borderWidth: 1,
-            borderColor: selected === t.id ? '#2272A6' : isDark ? '#1E3A52' : '#D5DEE8',
-            backgroundColor: selected === t.id
-              ? isDark ? '#1A3A54' : '#EDF5FB'
-              : isDark ? '#0D2C40' : '#F8FAFC',
-          }}>
-            <Text style={{
-              fontSize: 13,
-              color: selected === t.id ? '#2272A6' : isDark ? '#7AAEC8' : '#4A6A82',
-              fontFamily: 'Poppins',
-            }}>{t.label}</Text>
-          </View>
-        </Pressable>
-      ))}
+    <View className="flex-row flex-wrap gap-2">
+      {TARIFF_TYPES.map((t) => {
+        const isSelected = selected === t.id;
+        return (
+          <Pressable key={t.id} onPress={() => onSelect(t.id)}>
+            {/* px-3.5 = 14px  (Tailwind default › 3.5 × 4px)
+                bg-primary/7 = 7% opacity  (config › opacity.7)
+                dark:bg-brand-selected = #1A3A54  (config › brand.selected) */}
+            <View
+              className={[
+                'px-3.5 py-2 rounded-full border',
+                isSelected
+                  ? 'border-primary bg-primary/7 dark:bg-brand-selected/20'
+                  : 'border-border bg-card'
+              ].join(' ')}
+            >
+              {/* text-sm = 13px / 18px lh  (config › fontSize.13) */}
+              <Text
+                className={[
+                  'text-sm font-sans',
+                  isSelected
+                    ? 'text-primary'
+                    : 'text-[#4A6A82] dark:text-brand-fg-muted',
+                ].join(' ')}
+              >
+                {t.label}
+              </Text>
+            </View>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function Step4Screen() {
   const { saveStep4, isLoading } = useProfileStore();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const [hasElec,  setHasElec]  = React.useState(true);
   const [hasGas,   setHasGas]   = React.useState(false);
@@ -137,14 +180,9 @@ export default function Step4Screen() {
     }
   };
 
-  const bg      = isDark ? '#0E1923' : '#F0F4F8';
-  const cardBg  = isDark ? '#132030' : '#FFFFFF';
-  const mutedFg = isDark ? '#7AAEC8' : '#4A6A82';
-  const borderC = isDark ? '#1E3A52' : '#E5EDF3';
-  const inputFg = isDark ? '#F0F8FF' : '#0D2C40';
-
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
+    <View className="flex-1 bg-background">
+
       <SetupHeader
         currentStep={4}
         totalSteps={5}
@@ -153,151 +191,224 @@ export default function Step4Screen() {
         onBack={() => router.back()}
       />
 
+      {/* ── Scrollable form ─────────────────────────────────────────────── */}
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
+        keyboardShouldPersistTaps="handled"
+      >
 
-        <View style={{ gap: 8, marginBottom: 16 }}>
-          <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins',
-            letterSpacing: 0.5, marginBottom: 4 }}>SELECT ENERGY TYPE</Text>
-          <SectionToggle label="Electricity" icon="⚡" enabled={hasElec}
-            onToggle={() => setHasElec(!hasElec)} isDark={isDark} />
-          <SectionToggle label="Gas" icon="🔥" enabled={hasGas}
-            onToggle={() => setHasGas(!hasGas)} isDark={isDark} />
+        {/* ── Energy type toggles ──────────────────────────────────────── */}
+        <View className="gap-2 mb-4">
+          {/* text-xs = 11px / 14px lh  (config › fontSize.11)
+              tracking-[0.5px] — no standard step, kept as arbitrary       */}
+          <Text className="text-xs tracking-[0.5px] mb-1 text-[#4A6A82] dark:text-brand-fg-muted font-sans">
+            SELECT ENERGY TYPE
+          </Text>
+          <SectionToggle
+            label="Electricity"
+            icon="⚡"
+            enabled={hasElec}
+            onToggle={() => setHasElec(!hasElec)}
+          />
+          <SectionToggle
+            label="Gas"
+            icon="🔥"
+            enabled={hasGas}
+            onToggle={() => setHasGas(!hasGas)}
+          />
         </View>
 
+        {/* ── Electricity details card ─────────────────────────────────── */}
         {hasElec && (
-          <View style={{
-            backgroundColor: cardBg, borderRadius: 16, padding: 20,
-            marginBottom: 12, borderWidth: 1, borderColor: borderC, gap: 14,
-          }}>
-            <Text style={{ color: inputFg, fontSize: 13, fontWeight: '600',
-              fontFamily: 'Poppins-SemiBold' }}>Electricity Details</Text>
+          <View className="bg-card rounded-2xl p-5 mb-3 border border-border gap-3.5">
+            {/* text-sm = 13px / 18px lh  (config › fontSize.13) */}
+            <Text className="text-sm font-semibold text-brand dark:text-brand-fg">
+              Electricity Details
+            </Text>
 
-            <View style={{ gap: 6 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            {/* MPAN (required) */}
+            <View className="gap-1.5">
+              <View className="flex-row items-center gap-1.5">
                 <Label>MPAN</Label>
-                <Text style={{ color: '#E24B4A', fontSize: 12 }}>*</Text>
-                <Text style={{ color: mutedFg, fontSize: 11 }}>(13-digit meter number)</Text>
+                <Text className="text-destructive text-xs">*</Text>
+                {/* text-xs = 11px  (config › fontSize.11) */}
+                <Text className="text-xs text-[#4A6A82] dark:text-brand-fg-muted">
+                  (13-digit meter number)
+                </Text>
               </View>
-              <Input placeholder="1900012345678" keyboardType="numeric" maxLength={13}
-                value={mpan} onChangeText={setMpan}
-                className={error.includes('MPAN') ? 'border-destructive' : ''} />
+              <Input
+                placeholder="1900012345678"
+                keyboardType="numeric"
+                maxLength={13}
+                value={mpan}
+                onChangeText={setMpan}
+                className={error.includes('MPAN') ? 'border-destructive' : ''}
+              />
             </View>
 
-            <View style={{ gap: 6 }}>
+            {/* Current supplier */}
+            <View className="gap-1.5">
               <Label>Current supplier</Label>
-              <Input placeholder="e.g. British Gas" value={elecSup} onChangeText={setElecSup} />
+              <Input
+                placeholder="e.g. British Gas"
+                value={elecSup}
+                onChangeText={setElecSup}
+              />
             </View>
 
-            <View style={{ gap: 6 }}>
+            {/* Annual usage */}
+            <View className="gap-1.5">
               <Label>Annual usage (kWh)</Label>
-              <Input placeholder="e.g. 25000" keyboardType="numeric"
-                value={elecKwh} onChangeText={setElecKwh} />
+              <Input
+                placeholder="e.g. 25000"
+                keyboardType="numeric"
+                value={elecKwh}
+                onChangeText={setElecKwh}
+              />
             </View>
 
-            <View style={{ gap: 8 }}>
+            {/* Tariff type chips */}
+            <View className="gap-2">
               <Label>Tariff type</Label>
-              <TariffChips selected={elecTariff} onSelect={setElecTariff} isDark={isDark} />
+              <TariffChips selected={elecTariff} onSelect={setElecTariff} />
             </View>
           </View>
         )}
 
+        {/* ── Gas details card ─────────────────────────────────────────── */}
         {hasGas && (
-          <View style={{
-            backgroundColor: cardBg, borderRadius: 16, padding: 20,
-            marginBottom: 12, borderWidth: 1, borderColor: borderC, gap: 14,
-          }}>
-            <Text style={{ color: inputFg, fontSize: 13, fontWeight: '600',
-              fontFamily: 'Poppins-SemiBold' }}>Gas Details</Text>
+          <View className="bg-card rounded-2xl p-5 mb-3 border border-border gap-3.5">
+            <Text className="text-sm font-semibold text-brand dark:text-brand-fg">
+              Gas Details
+            </Text>
 
-            <View style={{ gap: 6 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            {/* MPRN (required) */}
+            <View className="gap-1.5">
+              <View className="flex-row items-center gap-1.5">
                 <Label>MPRN</Label>
-                <Text style={{ color: '#E24B4A', fontSize: 12 }}>*</Text>
-                <Text style={{ color: mutedFg, fontSize: 11 }}>(6-10 digit meter number)</Text>
+                <Text className="text-destructive text-xs">*</Text>
+                <Text className="text-xs text-[#4A6A82] dark:text-brand-fg-muted">
+                  (6-10 digit meter number)
+                </Text>
               </View>
-              <Input placeholder="1234567" keyboardType="numeric" maxLength={10}
-                value={mprn} onChangeText={setMprn}
-                className={error.includes('MPRN') ? 'border-destructive' : ''} />
+              <Input
+                placeholder="1234567"
+                keyboardType="numeric"
+                maxLength={10}
+                value={mprn}
+                onChangeText={setMprn}
+                className={error.includes('MPRN') ? 'border-destructive' : ''}
+              />
             </View>
 
-            <View style={{ gap: 6 }}>
+            {/* Current supplier */}
+            <View className="gap-1.5">
               <Label>Current supplier</Label>
-              <Input placeholder="e.g. British Gas" value={gasSup} onChangeText={setGasSup} />
+              <Input
+                placeholder="e.g. British Gas"
+                value={gasSup}
+                onChangeText={setGasSup}
+              />
             </View>
 
-            <View style={{ gap: 6 }}>
+            {/* Annual usage */}
+            <View className="gap-1.5">
               <Label>Annual usage (kWh)</Label>
-              <Input placeholder="e.g. 18000" keyboardType="numeric"
-                value={gasKwh} onChangeText={setGasKwh} />
+              <Input
+                placeholder="e.g. 18000"
+                keyboardType="numeric"
+                value={gasKwh}
+                onChangeText={setGasKwh}
+              />
             </View>
 
-            <View style={{ gap: 8 }}>
+            {/* Tariff type chips */}
+            <View className="gap-2">
               <Label>Tariff type</Label>
-              <TariffChips selected={gasTariff} onSelect={setGasTariff} isDark={isDark} />
+              <TariffChips selected={gasTariff} onSelect={setGasTariff} />
             </View>
           </View>
         )}
 
+        {/* ── Smart meter toggle row ────────────────────────────────────── */}
+        {/* p-3.5 = 14px, gap-3.5 = 14px  (Tailwind default › 3.5 × 4px) */}
         <Pressable
           onPress={() => setHasSmart(!hasSmart)}
-          style={{
-            flexDirection: 'row', alignItems: 'center', gap: 14,
-            padding: 14, borderRadius: 12,
-            backgroundColor: cardBg, borderWidth: 1, borderColor: borderC,
-          }}>
+          className="flex-row items-center gap-3.5 p-3.5 rounded-xl bg-card border border-border"
+        >
           <Text style={{ fontSize: 20 }}>📡</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: inputFg, fontSize: 14, fontFamily: 'Poppins-SemiBold' }}>
+
+          <View className="flex-1">
+            {/* text-sm = 14px  (config › fontSize.sm) */}
+            <Text className="text-sm font-semibold text-brand dark:text-brand-fg">
               I have a smart meter
             </Text>
-            <Text style={{ color: mutedFg, fontSize: 12, fontFamily: 'Poppins', marginTop: 2 }}>
+            {/* text-xs = 12px  (config › fontSize.xs) */}
+            <Text className="text-xs mt-0.5 font-sans text-[#4A6A82] dark:text-brand-fg-muted">
               Enables automatic reading collection
             </Text>
           </View>
-          <View style={{
-            width: 22, height: 22, borderRadius: 11,
-            backgroundColor: hasSmart ? '#2272A6' : 'transparent',
-            borderWidth: hasSmart ? 0 : 1.5,
-            borderColor: isDark ? '#1E3A52' : '#C8DCE9',
-            alignItems: 'center', justifyContent: 'center',
-          }}>
+
+          {/* Check circle
+              w-5.5 h-5.5 = 22px  (config › spacing.5.5)
+              borderWidth 1.5 unchecked — kept as style prop                */}
+          <View
+            className={[
+              'w-5.5 h-5.5 rounded-full items-center justify-center',
+              hasSmart ? 'bg-primary' : 'border-border',
+            ].join(' ')}
+            style={{ borderWidth: hasSmart ? 0 : 1.5 }}
+          >
             {hasSmart && (
               <Svg width="12" height="12" viewBox="0 0 12 12">
-                <Path d="M2 6l3 3 5-5" fill="none" stroke="#fff"
-                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <Path
+                  d="M2 6l3 3 5-5"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </Svg>
             )}
           </View>
         </Pressable>
+
       </ScrollView>
 
-      {/* ── Fixed bottom button ── */}
-      <View style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        backgroundColor: bg,
-        paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36,
-        borderTopWidth: 1, borderTopColor: isDark ? '#1E3A52' : '#E2EAF0', zIndex: 100,
-      }}>
+      {/* ── Fixed bottom bar ──────────────────────────────────────────────── */}
+      <View className="absolute bottom-0 left-0 right-0 bg-background px-5 pt-3 pb-9 border-t border-border z-50">
+
+        {/* Error banner
+            bg-destructive/8 = 8% opacity  (config › opacity.8)
+            rounded-banner   = 10px        (config › borderRadius.banner) */}
         {error ? (
-          <View style={{
-            backgroundColor: '#E24B4A15', borderRadius: 10,
-            padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E24B4A30',
-          }}>
-            <Text style={{ color: '#E24B4A', fontSize: 13 }}>{error}</Text>
+          <View className="bg-destructive/8 rounded-banner p-3 mb-3 border border-destructive/20">
+            <Text className="text-destructive text-sm font-sans">
+              {error}
+            </Text>
           </View>
         ) : null}
+
+        {/* CTA button
+            h-12         = 48px  (Tailwind default › 12 × 4px)
+            rounded-card = 14px  (config › borderRadius.card)
+            style color  = white forced — custom Text component fix        */}
         <Pressable
           onPress={handleContinue}
           disabled={isLoading}
-          style={{ backgroundColor: '#2272A6', height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', opacity: isLoading ? 0.7 : 1 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+          className={[
+            'bg-primary h-12 rounded-card items-center justify-center',
+            isLoading ? 'opacity-70' : 'opacity-100',
+          ].join(' ')}
+        >
+          <Text style={{ color: '#ffffff' }} className="text-base font-bold">
             {isLoading ? 'Saving...' : 'Continue'}
           </Text>
         </Pressable>
+
       </View>
     </View>
   );

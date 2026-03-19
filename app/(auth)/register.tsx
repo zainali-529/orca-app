@@ -2,16 +2,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
+import { Icon } from '@/components/ui/icon';
 import { AuthHeader } from '@/components/shared/auth-header';
 import { KeyboardView } from '@/components/shared/keyboard-view';
 import { useAuthStore } from '@/lib/store/auth.store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, router } from 'expo-router';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
+import { ArrowLeft, Eye, EyeOff, UserPlus } from 'lucide-react-native';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import { z } from 'zod';
 
 const registerSchema = z
@@ -33,25 +33,12 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-function UserPlusIcon() {
-  return (
-    <Svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
-        stroke="#2DD4A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      />
-      <Path d="M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" fill="none" stroke="#2DD4A0" strokeWidth="2" />
-      <Path d="M19 8v6M22 11h-6" stroke="#2DD4A0" strokeWidth="2" strokeLinecap="round" />
-    </Svg>
-  );
-}
-
 function BackButton() {
   return (
     <Link href="/(auth)/login" asChild>
       <Pressable hitSlop={12} className="flex-row items-center gap-2">
-        <ArrowLeft size={18} color="#8BA8C4" />
-        <Text style={{ color: '#8BA8C4', fontSize: 14 }}>Sign in</Text>
+        <Icon as={ArrowLeft} size={18} className="text-muted-foreground" />
+        <Text className="text-sm text-muted-foreground">Sign in</Text>
       </Pressable>
     </Link>
   );
@@ -95,7 +82,7 @@ export default function RegisterScreen() {
     <KeyboardView>
 
       <AuthHeader
-        icon={<UserPlusIcon />}
+        icon={<Icon as={UserPlus} size={26} className="text-primary" />}
         title="Create account"
         subtitle="Get started with Energy Broker"
         topLeft={<BackButton />}
@@ -177,7 +164,7 @@ export default function RegisterScreen() {
                     onBlur={onBlur} onChangeText={onChange} value={value}
                     className={errors.password ? 'border-destructive pr-12' : 'pr-12'} />
                   <Pressable className="absolute right-3 top-2.5" onPress={() => setShowPassword(p => !p)} hitSlop={12}>
-                    {showPassword ? <EyeOff size={20} color="#8BA8C4" /> : <Eye size={20} color="#8BA8C4" />}
+                    <Icon as={showPassword ? EyeOff : Eye} size={20} className="text-muted-foreground" />
                   </Pressable>
                 </View>
               )} />
@@ -196,7 +183,7 @@ export default function RegisterScreen() {
                     onBlur={onBlur} onChangeText={onChange} value={value}
                     className={errors.confirmPassword ? 'border-destructive pr-12' : 'pr-12'} />
                   <Pressable className="absolute right-3 top-2.5" onPress={() => setShowConfirm(p => !p)} hitSlop={12}>
-                    {showConfirm ? <EyeOff size={20} color="#8BA8C4" /> : <Eye size={20} color="#8BA8C4" />}
+                    <Icon as={showConfirm ? EyeOff : Eye} size={20} className="text-muted-foreground" />
                   </Pressable>
                 </View>
               )} />

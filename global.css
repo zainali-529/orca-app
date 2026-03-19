@@ -9,74 +9,79 @@
     font-family: 'Poppins', 'Poppins_400Regular', sans-serif;
   }
 
-  /* ── Light mode ──────────────────────────────────────────── */
+  /* ── Light mode (Your Brand) ──────────────────────────────────────────── */
   :root {
-    --background:          0 0% 100%;       /* #FFFFFF — pure white */
-    --foreground:          210 24% 12%;     /* #162030 — near-black with navy tint */
+    --background:          40 18% 97%;      /* #F8F7F5 — Main Background */
+    --foreground:          0 0% 10%;        /* #000000E6 — Primary Text */
 
-    --card:                0 0% 100%;       /* #FFFFFF */
-    --card-foreground:     210 24% 12%;
+    --card:                0 0% 100%;       /* #FFFFFF — Card Background */
+    --card-foreground:     0 0% 10%;
 
-    --popover:             0 0% 100%;
-    --popover-foreground:  210 24% 12%;
+    --popover:             0 0% 100%;       /* #FFFFFF */
+    --popover-foreground:  0 0% 10%;
 
-    --primary:             205 72% 35%;     /* #2272A6 — brand blue */
-    --primary-foreground:  210 40% 98%;     /* near white */
+    --primary:             204 66% 39%;     /* #2272A6 — Primary (Main CTA) */
+    --primary-foreground:  0 0% 100%;       /* White text on primary */
+    --primary-hover:       203 66% 31%;     /* #1B5C85 — Primary Hover */
 
-    --secondary:           210 20% 95%;     /* #EFF3F7 — cool light grey */
-    --secondary-foreground: 210 24% 20%;
+    --secondary:           204 66% 15%;     /* #0D2C40 — Secondary Brand */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted:               210 20% 95%;     /* #EFF3F7 */
-    --muted-foreground:    210 18% 46%;     /* #637A90 */
+    --muted:               0 0% 92%;        /* #EBEBEB */
+    --muted-foreground:    0 0% 60%;        /* #00000066 — Muted Text */
+    --secondary-text:      0 0% 40%;        /* #00000099 — Secondary Text */
 
-    --accent:              205 60% 92%;     /* #D6EAF6 — soft blue tint */
-    --accent-foreground:   205 72% 25%;
+    --accent:              0 0% 88%;        /* #E0E0E0 */
+    --accent-foreground:   0 0% 10%;
 
-    --destructive:         0 84% 60%;
-    --border:              210 22% 88%;     /* #D5DEE8 — cool grey border */
-    --input:               210 22% 88%;
-    --ring:                205 72% 45%;     /* brand blue ring */
+    --destructive:         23 100% 36%;     /* #B74700 — Error */
+    --destructive-foreground: 0 0% 100%;
+    
+    --success:             152 92% 24%;     /* #057642 — Success */
+    --success-foreground:  0 0% 100%;
+
+    --border:              0 0% 88%;        /* #E0E0E0 — Border Light */
+    --divider:             0 0% 92%;        /* #EBEBEB — Divider */
+    --input:               0 0% 88%;        /* Matches border */
+    --ring:                204 66% 39%;     /* Matches primary */
     --radius:              0.625rem;
   }
 
-  /* ── Dark mode — Premium navy/charcoal, NOT pure black ──── */
-  /*
-   * Philosophy:
-   *   background   = darkest surface  (#0E1923 — deep navy-charcoal)
-   *   card         = one step up       (#132030 — slightly lighter)
-   *   popover      = one more step     (#1A2A3D — elevated surface)
-   *   border       = subtle separator  (low opacity white on navy)
-   *   foreground   = warm white        (#E8F0F8 — not harsh pure white)
-   *   muted-fg     = readable muted    (#7A9AB8 — navy-tinted grey)
-   *
-   * Every surface has a navy undertone that ties back to brand #0D2C40.
-   */
+  /* ── Dark mode (Your Brand) ─────────────────────────────────────────── */
   .dark:root {
-    --background:          210 30% 10%;     /* #0E1923 — deep navy-charcoal */
-    --foreground:          210 30% 92%;     /* #D9E8F5 — warm off-white */
+    --background:          220 8% 7%;     /* #111214 — Main Background */
+    --foreground:          0 0% 90%;        /* #FFFFFFE6 — Primary Text */
 
-    --card:                210 28% 13%;     /* #132030 — card surface */
-    --card-foreground:     210 30% 92%;
+    --card:                210 7% 12%;      /* #1C1E20 — Card Background */
+    --card-foreground:     0 0% 90%;
 
-    --popover:             210 28% 16%;     /* #1A2A3D — elevated popup */
-    --popover-foreground:  210 30% 92%;
+    --popover:             210 4% 18%;      /* #2D2F31 */
+    --popover-foreground:  0 0% 90%;
 
-    --primary:             205 65% 52%;     /* #3D9DD4 — brighter blue in dark */
-    --primary-foreground:  210 30% 10%;     /* dark bg for text on blue */
+    --primary:             204 66% 39%;     /* #2272A6 — Primary (Main CTA) */
+    --primary-foreground:  0 0% 100%;
+    --primary-hover:       205 50% 53%;     /* #4A90C2 — Primary Hover */
 
-    --secondary:           210 25% 18%;     /* #1E2E3F — subtle secondary surface */
-    --secondary-foreground: 210 28% 80%;    /* #AABFD6 */
+    --secondary:           204 66% 15%;     /* #0D2C40 — Secondary Brand */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted:               210 25% 16%;     /* #192636 — muted surface */
-    --muted-foreground:    210 20% 55%;     /* #6E8FA8 — readable muted text */
+    --muted:               210 2% 19%;      /* #2F3031 */
+    --muted-foreground:    0 0% 40%;        /* #FFFFFF66 — Muted Text */
+    --secondary-text:      0 0% 60%;        /* #FFFFFF99 — Secondary Text */
 
-    --accent:              205 40% 20%;     /* #1D3348 — blue-tinted accent */
-    --accent-foreground:   205 65% 75%;     /* #7DC0E8 */
+    --accent:              205 51% 63%;     /* #70A9D1 — Accent / Highlight */
+    --accent-foreground:   0 0% 10%;
 
-    --destructive:         0 65% 55%;       /* slightly desaturated red for dark */
-    --border:              210 25% 20%;     /* #1E2E3F — subtle border */
-    --input:               210 25% 18%;     /* #1A2736 — input bg */
-    --ring:                205 65% 52%;     /* matches primary */
+    --destructive:         0 100% 74%;      /* #FF7B7B — Error */
+    --destructive-foreground: 0 0% 10%;
+
+    --success:             155 51% 56%;     /* #57C898 — Success */
+    --success-foreground:  0 0% 10%;
+
+    --border:              210 2% 23%;      /* #3A3B3C — Border Dark */
+    --divider:             210 2% 19%;      /* #2F3031 — Divider */
+    --input:               210 2% 23%;      /* Matches border */
+    --ring:                204 66% 39%;     /* Matches primary */
     --radius:              0.625rem;
   }
 }

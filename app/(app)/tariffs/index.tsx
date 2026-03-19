@@ -3,7 +3,6 @@ import { useProfileStore } from '@/lib/store/profile.store';
 import { useTariffStore } from '@/lib/store/tariff.store';
 import type { EnrichedTariff } from '@/lib/types/tariff.types';
 import { router } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import {
   ActivityIndicator,
@@ -13,43 +12,46 @@ import {
   View,
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import Svg, { Path, Circle } from 'react-native-svg';
-
-const B = { navy: '#0D2C40', blue: '#2272A6', blueBrt: '#3D9DD4', fg: '#F0F8FF', fgMuted: '#7AAEC8' };
+import Svg, { Path } from 'react-native-svg';
 
 const FUEL_TYPES   = [{ id: 'dual', label: '⚡🔥 Dual' }, { id: 'electricity', label: '⚡ Electricity' }, { id: 'gas', label: '🔥 Gas' }];
 const TARIFF_TYPES = [{ id: 'any', label: 'All' }, { id: 'fixed', label: 'Fixed' }, { id: 'variable', label: 'Variable' }, { id: 'flexible', label: 'Flexible' }];
 
-// ── Top nav tabs ───────────────────────────────────────────
 const TOP_TABS = [
-  { id: 'compare',   label: 'Compare',   route: '/(app)/tariffs' },
-  { id: 'browse',    label: 'Browse',    route: '/(app)/tariffs/browse' },
-  { id: 'suppliers', label: 'Suppliers', route: '/(app)/tariffs/suppliers' },
-  { id: 'calculate', label: 'Calculator',route: '/(app)/tariffs/calculate' },
+  { id: 'compare',   label: 'Compare',    route: '/(app)/tariffs' },
+  { id: 'browse',    label: 'Browse',     route: '/(app)/tariffs/browse' },
+  { id: 'suppliers', label: 'Suppliers',  route: '/(app)/tariffs/suppliers' },
+  { id: 'calculate', label: 'Calculator', route: '/(app)/tariffs/calculate' },
 ];
 
-function TopTabs({ active, isDark }: { active: string; isDark: boolean }) {
+// ─── Top nav tabs ─────────────────────────────────────────────────────────────
+// isDark removed — header bg is always brand navy in both modes
+
+function TopTabs({ active }: { active: string }) {
   return (
-    <View style={{
-      flexDirection: 'row',
-      backgroundColor: isDark ? '#0A1929' : '#0D2C40',
-      paddingHorizontal: 16,
-      paddingBottom: 0,
-    }}>
+    // bg-brand = #0D2C40 — fixed dark navy regardless of mode
+    <View className="flex-row bg-brand px-4">
       {TOP_TABS.map((tab) => (
         <Pressable
           key={tab.id}
           onPress={() => router.push(tab.route as any)}
-          style={{ flex: 1, alignItems: 'center', paddingVertical: 10 }}>
-          <Text style={{
-            color: active === tab.id ? '#FFFFFF' : '#7AAEC8',
-            fontSize: 12, fontFamily: active === tab.id ? 'Poppins-SemiBold' : 'Poppins',
-          }}>{tab.label}</Text>
+          // py-2.5 = 10px  (Tailwind default)
+          className="flex-1 items-center py-2.5"
+        >
+          <Text
+            className={[
+              'text-xs',
+              active === tab.id
+                ? 'text-brand-fg font-semibold'
+                : 'text-brand-fg-muted font-sans',
+            ].join(' ')}
+          >
+            {tab.label}
+          </Text>
           {active === tab.id && (
-            <View style={{
-              position: 'absolute', bottom: 0,
-              height: 2, width: '80%', backgroundColor: B.blueBrt, borderRadius: 2,
-            }} />
+            // h-0.5 = 2px, w-4/5 = 80%
+            // bg-brand-blue-bright = #3D9DD4  (config › brand.blue-bright)
+            <View className="absolute bottom-0 h-0.5 w-4/5 bg-brand-blue-bright rounded-sm" />
           )}
         </Pressable>
       ))}
@@ -57,67 +59,103 @@ function TopTabs({ active, isDark }: { active: string; isDark: boolean }) {
   );
 }
 
-function Chip({ label, active, onPress, isDark }: {
-  label: string; active: boolean; onPress: () => void; isDark: boolean;
+// ─── Filter chip ──────────────────────────────────────────────────────────────
+
+function Chip({ label, active, onPress }: {
+  label: string; active: boolean; onPress: () => void;
 }) {
   return (
     <Pressable onPress={onPress}>
-      <View style={{
-        paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, borderWidth: 1,
-        borderColor: active ? B.blue : isDark ? '#1E3A52' : '#D5DEE8',
-        backgroundColor: active ? (isDark ? '#1A3A54' : '#EDF5FB') : (isDark ? '#132030' : '#F8FAFC'),
-      }}>
-        <Text style={{ fontSize: 12, fontFamily: 'Poppins',
-          color: active ? B.blue : isDark ? '#7AAEC8' : '#4A6A82' }}>{label}</Text>
+      {/* px-3.5 = 14px, py-1.5 = 6px  (closest steps to original 13px/7px) */}
+      <View
+        className={[
+          'px-3.5 py-1.5 rounded-full border',
+          active
+            ? 'border-primary bg-primary/7 dark:bg-brand-/20'
+            : 'border-border bg-card',
+        ].join(' ')}
+      >
+        {/* text-xs = 12px  (config › fontSize.xs) */}
+        <Text
+          className={[
+            'text-xs font-sans',
+            active ? 'text-primary' : 'text-[#4A6A82] dark:text-brand-fg-muted',
+          ].join(' ')}
+        >
+          {label}
+        </Text>
       </View>
     </Pressable>
   );
 }
 
-function BestDealBanner({ bestDeal, isDark }: { bestDeal: any; isDark: boolean }) {
+// ─── Best deal banner ─────────────────────────────────────────────────────────
+
+function BestDealBanner({ bestDeal }: { bestDeal: any }) {
   const scale = useSharedValue(0.95);
   React.useEffect(() => { scale.value = withSpring(1, { damping: 14 }); }, []);
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   if (!bestDeal) return null;
+
   return (
-    <Animated.View style={style}>
-      <View style={{
-        borderRadius: 16, padding: 16, marginBottom: 14,
-        backgroundColor: isDark ? '#1A3A54' : '#EDF5FB',
-        borderWidth: 1.5, borderColor: B.blue,
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <View style={{ backgroundColor: B.blue, borderRadius: 6, padding: 4 }}>
+    <Animated.View style={animStyle}>
+      {/* rounded-2xl, border 1.5 — style prop (no Tailwind step for 1.5)
+          bg-primary/7 light tint, dark:bg-brand-selected = #1A3A54        */}
+      <View
+        className="rounded-2xl p-4 mb-3.5 bg-primary/7 dark:bg-brand-selected/20 border-primary"
+        style={{ borderWidth: 1.5 }}
+      >
+        {/* Title row */}
+        <View className="flex-row items-center gap-2 mb-2">
+          {/* p-1 = 4px */}
+          <View className="bg-primary rounded-md p-1">
             <Text style={{ fontSize: 12 }}>⭐</Text>
           </View>
-          <Text style={{ color: B.blue, fontSize: 13, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+          {/* text-sm = 13px  (config › fontSize.13) */}
+          <Text className="text-sm font-bold text-primary">
             Best Deal Found
           </Text>
         </View>
-        <Text style={{ color: isDark ? B.fg : B.navy, fontSize: 16, fontWeight: '700',
-          fontFamily: 'Poppins-Bold' }}>{bestDeal.supplier}</Text>
-        <Text style={{ color: isDark ? B.fgMuted : '#4A6A82', fontSize: 13,
-          fontFamily: 'Poppins', marginTop: 2 }}>{bestDeal.tariffName}</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between',
-          marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: `${B.blue}30` }}>
+
+        {/* Supplier + tariff name */}
+        {/* text-base = 16px  (config › fontSize.base) */}
+        <Text className="text-base font-bold text-brand dark:text-brand-fg">
+          {bestDeal.supplier}
+        </Text>
+        <Text className="text-sm font-sans mt-0.5 text-[#4A6A82] dark:text-brand-fg-muted">
+          {bestDeal.tariffName}
+        </Text>
+
+        {/* Cost / saving row */}
+        <View className="flex-row justify-between mt-3 pt-2.5 border-t border-primary/20">
           <View>
-            <Text style={{ color: isDark ? B.fgMuted : '#4A6A82', fontSize: 11, fontFamily: 'Poppins' }}>Annual cost</Text>
-            <Text style={{ color: isDark ? B.fg : B.navy, fontSize: 18, fontWeight: '700',
-              fontFamily: 'Poppins-Bold' }}>£{bestDeal.annualCost?.toLocaleString()}</Text>
+            {/* text-xs = 11px  (config › fontSize.11) */}
+            <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+              Annual cost
+            </Text>
+            {/* text-lg = 18px  (config › fontSize.lg) */}
+            <Text className="text-lg font-bold text-brand dark:text-brand-fg">
+              £{bestDeal.annualCost?.toLocaleString()}
+            </Text>
           </View>
           {bestDeal.annualSaving > 0 && (
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ color: '#2DD4A0', fontSize: 11, fontFamily: 'Poppins' }}>You save</Text>
-              <Text style={{ color: '#2DD4A0', fontSize: 18, fontWeight: '700',
-                fontFamily: 'Poppins-Bold' }}>£{Math.round(bestDeal.annualSaving).toLocaleString()}/yr</Text>
+            <View className="items-end">
+              {/* text-brand-teal = #2DD4A0  (config › brand.teal) */}
+              <Text className="text-xs font-sans text-brand-teal">You save</Text>
+              <Text className="text-lg font-bold text-brand-teal">
+                £{Math.round(bestDeal.annualSaving).toLocaleString()}/yr
+              </Text>
             </View>
           )}
         </View>
+
+        {/* CTA button
+            rounded-banner = 10px  (config › borderRadius.banner) */}
         <Pressable
           onPress={() => router.push(`/(app)/tariffs/${bestDeal.tariffId}` as any)}
-          style={{ marginTop: 12, backgroundColor: B.blue, borderRadius: 10,
-            paddingVertical: 10, alignItems: 'center' }}>
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+          className="mt-3 bg-primary rounded-banner py-2.5 items-center"
+        >
+          <Text style={{ color: '#ffffff' }} className="text-sm font-bold">
             View This Deal
           </Text>
         </Pressable>
@@ -126,142 +164,181 @@ function BestDealBanner({ bestDeal, isDark }: { bestDeal: any; isDark: boolean }
   );
 }
 
-function TariffCard({ tariff, rank, isDark }: { tariff: EnrichedTariff; rank: number; isDark: boolean }) {
+// ─── Tariff card ──────────────────────────────────────────────────────────────
+
+function TariffCard({ tariff, rank }: { tariff: EnrichedTariff; rank: number }) {
   const saving = tariff.calculated?.annualSaving;
   const isChp  = saving !== null && saving !== undefined && saving > 0;
-  const textFg = isDark ? '#F0F8FF' : '#0D2C40';
-  const mutedFg = isDark ? '#7AAEC8' : '#4A6A82';
-  const borderC = isDark ? '#1E3A52' : '#E5EDF3';
 
   return (
     <Pressable onPress={() => router.push(`/(app)/tariffs/${tariff._id}` as any)}>
-      <View style={{
-        backgroundColor: isDark ? '#132030' : '#FFFFFF',
-        borderRadius: 14, padding: 16, marginBottom: 10,
-        borderWidth: 1, borderColor: isChp ? `${B.blue}50` : borderC,
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-          <View style={{ flex: 1, gap: 3 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-              <View style={{
-                width: 22, height: 22, borderRadius: 11,
-                backgroundColor: rank === 1 ? B.blue : (isDark ? '#1E3A52' : '#E5EDF3'),
-                alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Text style={{ color: rank === 1 ? '#fff' : mutedFg, fontSize: 10, fontWeight: '700' }}>{rank}</Text>
+      {/* rounded-card = 14px  (config › borderRadius.card)
+          mb-2.5 = 10px  (Tailwind default)
+          isChp → primary/30 border, else theme border                    */}
+      <View
+        className={[
+          'bg-card rounded-card p-4 mb-2.5 border',
+          isChp ? 'border-primary/30' : 'border-border',
+        ].join(' ')}
+      >
+
+        {/* ── Header row ───────────────────────────────────────────── */}
+        <View className="flex-row items-start justify-between mb-2.5">
+          <View className="flex-1 gap-1">
+            <View className="flex-row items-center gap-2 flex-wrap">
+
+              {/* Rank circle — w-5.5 h-5.5 = 22px  (config › spacing.5.5) */}
+              <View
+                className={[
+                  'w-5.5 h-5.5 rounded-full items-center justify-center',
+                  rank === 1 ? 'bg-primary' : 'bg-muted dark:bg-border/20',
+                ].join(' ')}
+              >
+                {/* text-xs = 10px  (config › fontSize.10) */}
+                <Text
+                  className={[
+                    'text-xs font-bold',
+                    rank === 1
+                      ? 'text-white'
+                      : 'text-[#4A6A82] dark:text-brand-fg-muted',
+                  ].join(' ')}
+                >
+                  {rank}
+                </Text>
               </View>
-              <Text style={{ color: textFg, fontSize: 15, fontWeight: '600', fontFamily: 'Poppins-SemiBold' }}>
+
+              {/* Supplier name — text-base  (config › fontSize.15) */}
+              <Text className="text-base font-semibold text-brand dark:text-brand-fg">
                 {tariff.supplier}
               </Text>
+
+              {/* LIVE badge
+                  bg-brand-teal/8 = teal at 8% opacity  (config › opacity.8 + brand.teal) */}
               {tariff.isLive && (
-                <View style={{ backgroundColor: '#2DD4A015', borderRadius: 6,
-                  paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: '#2DD4A035' }}>
-                  <Text style={{ color: '#2DD4A0', fontSize: 9, fontWeight: '700' }}>● LIVE</Text>
+                <View className="bg-brand-teal/8 rounded-md px-1.5 py-1 border border-brand-teal/20">
+                  <Text className="text-xs font-bold text-brand-teal">● LIVE</Text>
                 </View>
               )}
+
+              {/* Green indicator — text-xs  (config › fontSize.11) */}
               {tariff.isGreen && (
-                <Text style={{ color: '#22A660', fontSize: 11 }}>🌿</Text>
+                <Text className="text-xs">🌿</Text>
               )}
             </View>
-            <Text style={{ color: mutedFg, fontSize: 13, fontFamily: 'Poppins' }}>{tariff.tariffName}</Text>
+
+            {/* Tariff name — text-sm  (config › fontSize.13) */}
+            <Text className="text-sm font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+              {tariff.tariffName}
+            </Text>
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
+
+          {/* Annual cost */}
+          <View className="items-end">
             {tariff.calculated?.totalAnnualCost && (
               <>
-                <Text style={{ color: textFg, fontSize: 18, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+                {/* text-lg = 18px  (config › fontSize.lg) */}
+                <Text className="text-lg font-bold text-brand dark:text-brand-fg">
                   £{tariff.calculated.totalAnnualCost.toLocaleString()}
                 </Text>
-                <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins' }}>per year</Text>
+                <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+                  per year
+                </Text>
               </>
             )}
           </View>
         </View>
 
-        {/* Rate boxes */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+        {/* ── Rate boxes ───────────────────────────────────────────── */}
+        {/* bg-primary/6 light, bg-brand dark  (config › opacity.6 + brand.DEFAULT) */}
+        <View className="flex-row gap-2 mb-2.5">
           {tariff.electricity?.unitRate && (
-            <View style={{ flex: 1, backgroundColor: isDark ? '#0D2C40' : '#F0F6FB',
-              borderRadius: 8, padding: 8, alignItems: 'center' }}>
-              <Text style={{ color: B.blueBrt, fontSize: 14, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
-                {tariff.electricity.unitRate}p
+            <View className="flex-1 bg-primary/6 dark:bg-brand rounded-lg p-2 items-center">
+              {/* text-sm = 14px, text-brand-blue-bright = #3D9DD4  (config › brand.blue-bright) */}
+              <Text className="text-sm font-bold text-brand-blue-bright">
+                {tariff.electricity.unitRate}
               </Text>
-              <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins' }}>Elec/kWh</Text>
+              <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+                Elec/kWh
+              </Text>
             </View>
           )}
           {tariff.gas?.unitRate && (
-            <View style={{ flex: 1, backgroundColor: isDark ? '#0D2C40' : '#F0F6FB',
-              borderRadius: 8, padding: 8, alignItems: 'center' }}>
-              <Text style={{ color: B.blueBrt, fontSize: 14, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+            <View className="flex-1 bg-primary/6 dark:bg-brand rounded-lg p-2 items-center">
+              <Text className="text-sm font-bold text-brand-blue-bright">
                 {tariff.gas.unitRate}p
               </Text>
-              <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins' }}>Gas/kWh</Text>
+              <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+                Gas/kWh
+              </Text>
             </View>
           )}
-          <View style={{ flex: 1, backgroundColor: isDark ? '#0D2C40' : '#F0F6FB',
-            borderRadius: 8, padding: 8, alignItems: 'center' }}>
-            <Text style={{ color: textFg, fontSize: 13, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+          <View className="flex-1 bg-primary/6 dark:bg-brand rounded-lg p-2 items-center">
+            <Text className="text-sm font-bold text-brand dark:text-brand-fg">
               {tariff.contractLengthMonths > 0 ? `${tariff.contractLengthMonths}m` : 'None'}
             </Text>
-            <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins' }}>Contract</Text>
+            <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+              Contract
+            </Text>
           </View>
-          <View style={{ flex: 1, backgroundColor: isDark ? '#0D2C40' : '#F0F6FB',
-            borderRadius: 8, padding: 8, alignItems: 'center' }}>
-            <Text style={{ color: textFg, fontSize: 13, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+          <View className="flex-1 bg-primary/6 dark:bg-brand rounded-lg p-2 items-center">
+            <Text className="text-sm font-bold text-brand dark:text-brand-fg">
               £{tariff.calculated?.monthlyCost ?? '—'}
             </Text>
-            <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins' }}>Monthly</Text>
+            <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+              Monthly
+            </Text>
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', gap: 6, flex: 1, flexWrap: 'wrap' }}>
+        {/* ── Footer badges ─────────────────────────────────────────── */}
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row gap-1.5 flex-1 flex-wrap">
             {tariff.cashback > 0 && (
-              <View style={{ backgroundColor: '#2DD4A015', borderRadius: 6,
-                paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#2DD4A030' }}>
-                <Text style={{ color: '#2DD4A0', fontSize: 10, fontFamily: 'Poppins' }}>£{tariff.cashback} cashback</Text>
+              <View className="bg-brand-teal/8 rounded-md px-2 py-1 border border-brand-teal/20">
+                <Text className="text-xs font-sans text-brand-teal">
+                  £{tariff.cashback} cashback
+                </Text>
               </View>
             )}
             {tariff.exitFee === 0 && (
-              <View style={{ backgroundColor: isDark ? '#1E3A52' : '#F0F6FB', borderRadius: 6,
-                paddingHorizontal: 8, paddingVertical: 3 }}>
-                <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins' }}>No exit fee</Text>
+              <View className="bg-primary/6 dark:bg-primary/10 rounded-md px-2 py-1">
+                <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+                  No exit fee
+                </Text>
               </View>
             )}
           </View>
           {isChp && (
-            <Text style={{ color: '#2DD4A0', fontSize: 12, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+            // text-xs = 12px, text-brand-teal = #2DD4A0
+            <Text className="text-xs font-bold text-brand-teal">
               Save £{Math.round(saving!).toLocaleString()}/yr
             </Text>
           )}
         </View>
+
       </View>
     </Pressable>
   );
 }
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function TariffsCompareScreen() {
   const { comparison, isComparing, runComparison } = useTariffStore();
   const { profile } = useProfileStore();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const [fuelType,   setFuelType]   = React.useState<'dual' | 'electricity' | 'gas'>('dual');
   const [tariffType, setTariffType] = React.useState('any');
   const [greenOnly,  setGreenOnly]  = React.useState(false);
 
-  const bg      = isDark ? '#0E1923' : '#F0F4F8';
-  const cardBg  = isDark ? '#132030' : '#FFFFFF';
-  const textFg  = isDark ? '#F0F8FF' : '#0D2C40';
-  const mutedFg = isDark ? '#7AAEC8' : '#4A6A82';
-  const borderC = isDark ? '#1E3A52' : '#E5EDF3';
-
   const handleCompare = async () => {
     try {
       await runComparison({
-        fuelType, tariffType: tariffType as any,
-        isGreen: greenOnly || undefined,
-        annualElectricityKwh: profile?.energy?.annualElectricityKwh ?? undefined,
-        annualGasKwh:         profile?.energy?.annualGasKwh         ?? undefined,
+        fuelType,
+        tariffType: tariffType as any,
+        isGreen:    greenOnly || undefined,
+        annualElectricityKwh:       profile?.energy?.annualElectricityKwh       ?? undefined,
+        annualGasKwh:               profile?.energy?.annualGasKwh               ?? undefined,
         currentElectricitySupplier: profile?.energy?.currentElectricitySupplier ?? undefined,
         currentGasSupplier:         profile?.energy?.currentGasSupplier         ?? undefined,
         limit: 15,
@@ -274,120 +351,192 @@ export default function TariffsCompareScreen() {
   const tariffs = (comparison?.tariffs ?? []) as EnrichedTariff[];
 
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
-      {/* Header */}
-      <View style={{ backgroundColor: B.navy, paddingTop: 56, paddingBottom: 0 }}>
-        <View style={{ paddingHorizontal: 20, paddingBottom: 14 }}>
-          <Text style={{ color: B.fg, fontSize: 22, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+    <View className="flex-1 bg-background">
+
+      {/* ── Page header — always brand navy ──────────────────────────── */}
+      {/* pt-14 = 56px  (Tailwind default › 14 × 4px) */}
+      <View className="bg-brand pt-14">
+        <View className="px-5 pb-3.5">
+          {/* text-2xl = 22px  (config › fontSize.22) */}
+          <Text className="text-2xl font-bold text-brand-fg">
             Tariffs
           </Text>
-          <Text style={{ color: B.fgMuted, fontSize: 13, fontFamily: 'Poppins', marginTop: 2 }}>
-            {comparison ? `${tariffs.length} tariffs — cheapest first` : 'Compare UK energy tariffs'}
+          {/* text-sm = 13px  (config › fontSize.13) */}
+          <Text className="text-sm font-sans mt-0.5 text-brand-fg-muted">
+            {comparison
+              ? `${tariffs.length} tariffs — cheapest first`
+              : 'Compare UK energy tariffs'}
           </Text>
         </View>
-        <TopTabs active="compare" isDark={isDark} />
+        <TopTabs active="compare" />
       </View>
 
-      <ScrollView style={{ flex: 1 }}
+      <ScrollView
+        className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={isComparing} onRefresh={handleCompare} tintColor={B.blue} />}>
+        refreshControl={
+          <RefreshControl
+            refreshing={isComparing}
+            onRefresh={handleCompare}
+            tintColor="#2272A6"
+          />
+        }
+      >
 
-        {/* Filters */}
-        <View style={{
-          backgroundColor: cardBg, borderRadius: 14, padding: 14,
-          borderWidth: 1, borderColor: borderC, marginBottom: 16, gap: 12,
-        }}>
+        {/* ── Filter card ──────────────────────────────────────────────
+            rounded-card = 14px, p-3.5 = 14px  (config + Tailwind default) */}
+        <View className="bg-card rounded-card p-3.5 border border-border mb-4 gap-3">
+
+          {/* Fuel type chips */}
           <View>
-            <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins',
-              letterSpacing: 0.5, marginBottom: 8 }}>FUEL TYPE</Text>
+            {/* text-xs = 10px, tracking-[0.5px] kept as arbitrary (no config step) */}
+            <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted tracking-[0.5px] mb-2">
+              FUEL TYPE
+            </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {FUEL_TYPES.map(f => (
-                  <Chip key={f.id} label={f.label} isDark={isDark}
-                    active={fuelType === f.id} onPress={() => setFuelType(f.id as any)} />
+              <View className="flex-row gap-2">
+                {FUEL_TYPES.map((f) => (
+                  <Chip
+                    key={f.id}
+                    label={f.label}
+                    active={fuelType === f.id}
+                    onPress={() => setFuelType(f.id as any)}
+                  />
                 ))}
               </View>
             </ScrollView>
           </View>
+
+          {/* Tariff type chips */}
           <View>
-            <Text style={{ color: mutedFg, fontSize: 10, fontFamily: 'Poppins',
-              letterSpacing: 0.5, marginBottom: 8 }}>TARIFF TYPE</Text>
+            <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted tracking-[0.5px] mb-2">
+              TARIFF TYPE
+            </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {TARIFF_TYPES.map(t => (
-                  <Chip key={t.id} label={t.label} isDark={isDark}
-                    active={tariffType === t.id} onPress={() => setTariffType(t.id)} />
+              <View className="flex-row gap-2">
+                {TARIFF_TYPES.map((t) => (
+                  <Chip
+                    key={t.id}
+                    label={t.label}
+                    active={tariffType === t.id}
+                    onPress={() => setTariffType(t.id)}
+                  />
                 ))}
               </View>
             </ScrollView>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Pressable onPress={() => setGreenOnly(!greenOnly)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-              <View style={{
-                width: 38, height: 22, borderRadius: 11,
-                backgroundColor: greenOnly ? '#22A660' : (isDark ? '#1E3A52' : '#D5DEE8'),
-                justifyContent: 'center', paddingHorizontal: 2,
-              }}>
-                <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff',
-                  alignSelf: greenOnly ? 'flex-end' : 'flex-start' }} />
+
+          {/* Green only toggle + compare button */}
+          <View className="flex-row items-center gap-2.5">
+
+            <Pressable
+              onPress={() => setGreenOnly(!greenOnly)}
+              className="flex-row items-center gap-2 flex-1"
+            >
+              {/* Toggle pill — height 22px has no exact Tailwind step, kept via style */}
+              {/* bg-brand-green = #22A660  (config › brand.green) */}
+              <View
+                className={[
+                  'justify-center px-0.5 rounded-full',
+                  greenOnly ? 'bg-brand-green' : 'bg-border',
+                ].join(' ')}
+                style={{ width: 38, height: 22 }}
+              >
+                {/* w-[18px] h-[18px] — no exact Tailwind step (between w-4=16 and w-5=20) */}
+                <View
+                  className="rounded-full bg-white"
+                  style={{
+                    width: 18, height: 18,
+                    alignSelf: greenOnly ? 'flex-end' : 'flex-start',
+                  }}
+                />
               </View>
-              <Text style={{ color: greenOnly ? '#22A660' : mutedFg, fontSize: 13, fontFamily: 'Poppins' }}>
+              <Text
+                className={[
+                  'text-sm font-sans',
+                  greenOnly
+                    ? 'text-brand-green'
+                    : 'text-[#4A6A82] dark:text-brand-fg-muted',
+                ].join(' ')}
+              >
                 🌿 Green only
               </Text>
             </Pressable>
-            <Pressable onPress={handleCompare} disabled={isComparing}
-              style={{ backgroundColor: B.blue, borderRadius: 10,
-                paddingHorizontal: 16, paddingVertical: 9, opacity: isComparing ? 0.7 : 1 }}>
-              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+
+            {/* Compare button
+                rounded-banner = 10px, px-4 = 16px, py-2 ≈ 9px original */}
+            <Pressable
+              onPress={handleCompare}
+              disabled={isComparing}
+              className={[
+                'bg-primary rounded-banner px-4 py-2 items-center',
+                isComparing ? 'opacity-70' : 'opacity-100',
+              ].join(' ')}
+            >
+              <Text style={{ color: '#ffffff' }} className="text-sm font-bold">
                 {isComparing ? 'Comparing…' : 'Compare'}
               </Text>
             </Pressable>
           </View>
         </View>
 
+        {/* ── Loading state ─────────────────────────────────────────── */}
         {isComparing && !comparison && (
-          <View style={{ alignItems: 'center', paddingVertical: 40, gap: 12 }}>
-            <ActivityIndicator size="large" color={B.blue} />
-            <Text style={{ color: mutedFg, fontSize: 14, fontFamily: 'Poppins' }}>Fetching best tariffs…</Text>
+          /* py-10 = 40px  (Tailwind default) */
+          <View className="items-center py-10 gap-3">
+            <ActivityIndicator size="large" color="#2272A6" />
+            {/* text-sm = 14px  (config › fontSize.sm) */}
+            <Text className="text-sm font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+              Fetching best tariffs…
+            </Text>
           </View>
         )}
 
+        {/* ── Results ───────────────────────────────────────────────── */}
         {comparison && !isComparing && (
           <>
-            <BestDealBanner bestDeal={comparison.bestDeal} isDark={isDark} />
-            <View style={{
-              backgroundColor: cardBg, borderRadius: 12, padding: 12,
-              borderWidth: 1, borderColor: borderC, marginBottom: 14,
-              flexDirection: 'row', justifyContent: 'space-between',
-            }}>
+            <BestDealBanner bestDeal={comparison.bestDeal} />
+
+            {/* Current cost stats card */}
+            <View className="bg-card rounded-xl p-3 border border-border mb-3.5 flex-row justify-between">
               <View>
-                <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins' }}>Current est. annual spend</Text>
-                <Text style={{ color: textFg, fontSize: 16, fontWeight: '700', fontFamily: 'Poppins-Bold' }}>
+                {/* text-xs = 11px  (config › fontSize.11) */}
+                <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
+                  Current est. annual spend
+                </Text>
+                {/* text-base = 16px  (config › fontSize.base) */}
+                <Text className="text-base font-bold text-brand dark:text-brand-fg">
                   £{comparison.comparison.currentAnnualCost?.toLocaleString()}
                 </Text>
               </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins' }}>
+              <View className="items-end">
+                <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
                   vs {comparison.comparison.currentElectricitySupplier}
                 </Text>
-                <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins', marginTop: 2 }}>
+                <Text className="text-xs font-sans mt-0.5 text-[#4A6A82] dark:text-brand-fg-muted">
                   Ofgem cap rates
                 </Text>
               </View>
             </View>
-            {tariffs.map((t, i) => <TariffCard key={t._id} tariff={t} rank={i + 1} isDark={isDark} />)}
+
+            {tariffs.map((t, i) => (
+              <TariffCard key={t._id} tariff={t} rank={i + 1} />
+            ))}
+
             {tariffs.length === 0 && (
-              <View style={{ alignItems: 'center', paddingVertical: 32, gap: 8 }}>
-                <Text style={{ color: textFg, fontSize: 16, fontFamily: 'Poppins-SemiBold' }}>No tariffs found</Text>
-                <Text style={{ color: mutedFg, fontSize: 13, fontFamily: 'Poppins', textAlign: 'center' }}>
+              <View className="items-center py-8 gap-2">
+                <Text className="text-base font-semibold text-brand dark:text-brand-fg">
+                  No tariffs found
+                </Text>
+                <Text className="text-sm font-sans text-center text-[#4A6A82] dark:text-brand-fg-muted">
                   Try changing your filters
                 </Text>
               </View>
             )}
           </>
         )}
+
       </ScrollView>
     </View>
   );

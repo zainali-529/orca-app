@@ -1,87 +1,86 @@
 import { Text } from '@/components/ui/text';
 import { useTariffStore } from '@/lib/store/tariff.store';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
-const B = { navy: '#0D2C40', blue: '#2272A6', blueBrt: '#3D9DD4', fg: '#F0F8FF', fgMuted: '#7AAEC8' };
+// ─── Row ─────────────────────────────────────────────────────────────────────
 
-function Row({ label, value, highlight, isDark }: {
-  label: string; value: string; highlight?: boolean; isDark: boolean;
+function Row({ label, value, highlight }: {
+  label: string; value: string; highlight?: boolean;
 }) {
   return (
-    <View style={{
-      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-      paddingVertical: 10, borderBottomWidth: 1,
-      borderBottomColor: isDark ? '#1E3A52' : '#E5EDF3',
-    }}>
-      <Text style={{ color: isDark ? '#7AAEC8' : '#4A6A82', fontSize: 13, fontFamily: 'Poppins' }}>
+    <View className="flex-row justify-between items-center py-2.5 border-b border-border">
+      <Text className="text-sm font-sans text-[#4A6A82] dark:text-brand-fg-muted">
         {label}
       </Text>
-      <Text style={{
-        color: highlight ? B.blue : (isDark ? '#F0F8FF' : '#0D2C40'),
-        fontSize: 13, fontWeight: highlight ? '700' : '500',
-        fontFamily: highlight ? 'Poppins-SemiBold' : 'Poppins',
-      }}>{value}</Text>
+      <Text
+        className={[
+          'text-sm',
+          highlight
+            ? 'font-semibold text-primary'
+            : 'font-medium text-brand dark:text-brand-fg',
+        ].join(' ')}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
-function RateBox({ label, value, unit, isDark }: {
-  label: string; value: string; unit: string; isDark: boolean;
+// ─── Rate box ─────────────────────────────────────────────────────────────────
+
+function RateBox({ label, value, unit }: {
+  label: string; value: string; unit: string;
 }) {
   return (
-    <View style={{
-      flex: 1, backgroundColor: isDark ? '#132030' : '#F0F6FB',
-      borderRadius: 12, padding: 14, alignItems: 'center', gap: 4,
-      borderWidth: 1, borderColor: isDark ? '#1E3A52' : '#E5EDF3',
-    }}>
-      <Text style={{ color: B.blueBrt, fontSize: 20, fontWeight: '700',
-        fontFamily: 'Poppins-Bold' }}>{value}</Text>
-      <Text style={{ color: isDark ? '#7AAEC8' : '#4A6A82', fontSize: 10,
-        fontFamily: 'Poppins', textAlign: 'center' }}>{unit}</Text>
-      <Text style={{ color: isDark ? '#F0F8FF' : '#0D2C40', fontSize: 11,
-        fontFamily: 'Poppins-SemiBold', marginTop: 2 }}>{label}</Text>
+    <View className="flex-1 bg-primary/6 dark:bg-brand-selected/20 rounded-xl p-2.5 items-center gap-1 border border-border">
+      {/* text-xl = 20px — rate value */}
+      <Text className="text-xl font-bold text-brand-blue-bright">
+        {value}
+      </Text>
+      <Text className="text-xs font-sans text-center text-[#4A6A82] dark:text-brand-fg-muted">
+        {unit}
+      </Text>
+      <Text className="text-[11px] font-semibold mt-0.5 text-brand dark:text-brand-fg">
+        {label}
+      </Text>
     </View>
   );
 }
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function TariffDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedTariff, isLoadingDetail, loadTariff } = useTariffStore();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   React.useEffect(() => {
     if (id) loadTariff(id);
   }, [id]);
 
-  const bg      = isDark ? '#0E1923' : '#F0F4F8';
-  const cardBg  = isDark ? '#132030' : '#FFFFFF';
-  const textFg  = isDark ? '#F0F8FF' : '#0D2C40';
-  const mutedFg = isDark ? '#7AAEC8' : '#4A6A82';
-  const borderC = isDark ? '#1E3A52' : '#E5EDF3';
-
   if (isLoadingDetail) {
     return (
-      <View style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={B.blue} />
+      <View className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" color="#2272A6" />
       </View>
     );
   }
 
   if (!selectedTariff) {
     return (
-      <View style={{ flex: 1, backgroundColor: bg, alignItems: 'center',
-        justifyContent: 'center', padding: 32, gap: 12 }}>
-        <Text style={{ color: textFg, fontSize: 16, fontFamily: 'Poppins-SemiBold' }}>
+      <View className="flex-1 bg-background items-center justify-center p-8 gap-3">
+        <Text className="text-base font-semibold text-brand dark:text-brand-fg">
           Tariff not found
         </Text>
-        <Pressable onPress={() => router.back()}
-          style={{ backgroundColor: B.blue, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 }}>
-          <Text style={{ color: '#fff', fontFamily: 'Poppins-Bold' }}>Go Back</Text>
+        <Pressable
+          onPress={() => router.back()}
+          className="bg-primary rounded-banner px-5 py-2.5"
+        >
+          <Text style={{ color: '#ffffff' }} className="text-sm font-bold">
+            Go Back
+          </Text>
         </Pressable>
       </View>
     );
@@ -89,7 +88,6 @@ export default function TariffDetailScreen() {
 
   const t = selectedTariff;
 
-  // Estimate annual cost at UK average
   const UK_AVG_ELEC = 2900;
   const UK_AVG_GAS  = 11500;
   const elecCost = t.electricity?.unitRate
@@ -101,167 +99,217 @@ export default function TariffDetailScreen() {
   const totalCost = (elecCost ?? 0) + (gasCost ?? 0) || null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
+    <View className="flex-1 bg-background">
 
-      {/* ── Header ── */}
-      <View style={{ backgroundColor: B.navy, paddingTop: 56, paddingBottom: 24,
-        paddingHorizontal: 20 }}>
-        <Pressable onPress={() => router.back()} hitSlop={12}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+      {/* ── Header — always brand navy ────────────────────────────────── */}
+      {/* pt-14 = 56px, pb-6 = 24px  (Tailwind defaults) */}
+      <View className="bg-brand pt-14 pb-6 px-5">
+
+        {/* Back button */}
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          className="flex-row items-center gap-1.5 mb-4"
+        >
           <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <Path d="M15 18l-6-6 6-6" stroke={B.fgMuted} strokeWidth="2"
-              strokeLinecap="round" strokeLinejoin="round" />
+            <Path
+              d="M15 18l-6-6 6-6"
+              stroke="#7AAEC8"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </Svg>
-          <Text style={{ color: B.fgMuted, fontSize: 14, fontFamily: 'Poppins' }}>Back</Text>
+          <Text className="text-sm font-sans text-brand-fg-muted">Back</Text>
         </Pressable>
 
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start',
-          justifyContent: 'space-between' }}>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        {/* Supplier info + annual cost */}
+        <View className="flex-row items-start justify-between">
+          <View className="flex-1">
+
+            {/* Badges row */}
+            <View className="flex-row items-center gap-2 mb-1">
               {t.isGreen && (
-                <View style={{ backgroundColor: '#22A66020', borderRadius: 6,
-                  paddingHorizontal: 6, paddingVertical: 2 }}>
-                  <Text style={{ color: '#2DD4A0', fontSize: 10, fontWeight: '700' }}>🌿 GREEN</Text>
+                <View className="bg-brand-green/10 rounded-md px-1.5 py-0.5">
+                  <Text className="text-xs font-bold text-brand-teal">🌿 GREEN</Text>
                 </View>
               )}
-              <View style={{ backgroundColor: '#2272A620', borderRadius: 6,
-                paddingHorizontal: 6, paddingVertical: 2 }}>
-                <Text style={{ color: B.blueBrt, fontSize: 10, fontWeight: '700',
-                  textTransform: 'uppercase' }}>{t.tariffType}</Text>
+              <View className="bg-primary/13 rounded-md px-1.5 py-0.5">
+                <Text className="text-xs font-bold text-brand-blue-bright uppercase">
+                  {t.tariffType}
+                </Text>
               </View>
               {t.isLive && (
-                <View style={{ backgroundColor: '#2DD4A015', borderRadius: 6,
-                  paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: '#2DD4A040' }}>
-                  <Text style={{ color: '#2DD4A0', fontSize: 9, fontWeight: '700' }}>● LIVE</Text>
+                <View className="bg-brand-teal/8 rounded-md px-1.5 py-0.5 border border-brand-teal/25">
+                  <Text className="text-xs font-bold text-brand-teal">● LIVE</Text>
                 </View>
               )}
             </View>
-            <Text style={{ color: B.fg, fontSize: 20, fontWeight: '700',
-              fontFamily: 'Poppins-Bold' }}>{t.supplier}</Text>
-            <Text style={{ color: B.fgMuted, fontSize: 14, fontFamily: 'Poppins', marginTop: 2 }}>
+
+            {/* text-xl = 20px — supplier name */}
+            <Text className="text-xl font-bold text-brand-fg">
+              {t.supplier}
+            </Text>
+            <Text className="text-sm font-sans mt-0.5 text-brand-fg-muted">
               {t.tariffName}
             </Text>
           </View>
+
+          {/* Estimated annual cost */}
           {totalCost && (
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ color: B.fgMuted, fontSize: 11, fontFamily: 'Poppins' }}>Est. annual</Text>
-              <Text style={{ color: B.fg, fontSize: 22, fontWeight: '700',
-                fontFamily: 'Poppins-Bold' }}>£{totalCost.toLocaleString()}</Text>
+            <View className="items-end">
+              <Text className="text-xs font-sans text-brand-fg-muted">Est. annual</Text>
+              {/* text-xl = 20px — original was 22px, closest default */}
+              <Text className="text-xl font-bold text-brand-fg">
+                £{totalCost.toLocaleString()}
+              </Text>
             </View>
           )}
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }}
+      {/* ── Scrollable content ───────────────────────────────────────── */}
+      <ScrollView
+        className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
 
-        {/* ── Rate boxes ── */}
+        {/* ── Electricity rates ─────────────────────────────────────── */}
         {t.electricity?.unitRate && (
-          <View style={{ marginBottom: 12 }}>
-            <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins',
-              letterSpacing: 0.5, marginBottom: 10 }}>⚡ ELECTRICITY RATES</Text>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <RateBox label="Unit Rate" value={`${t.electricity.unitRate}p`}
-                unit="per kWh incl. VAT" isDark={isDark} />
-              <RateBox label="Standing Charge" value={`${t.electricity.standingCharge}p`}
-                unit="per day incl. VAT" isDark={isDark} />
+          <View className="mb-3">
+            <Text className="text-xs font-sans tracking-[0.5px] mb-2.5 text-[#4A6A82] dark:text-brand-fg-muted">
+              ⚡ ELECTRICITY RATES
+            </Text>
+            <View className="flex-row gap-2.5">
+              <RateBox
+                label="Unit Rate"
+                value={`${t.electricity.unitRate}p`}
+                unit="per kWh incl. VAT"
+              />
+              <RateBox
+                label="Standing Charge"
+                value={`${t.electricity.standingCharge}p`}
+                unit="per day incl. VAT"
+              />
               {elecCost && (
-                <RateBox label="Annual Cost" value={`£${elecCost.toLocaleString()}`}
-                  unit="at UK avg 2900kWh" isDark={isDark} />
+                <RateBox
+                  label="Annual Cost"
+                  value={`£${elecCost.toLocaleString()}`}
+                  unit="at UK avg 2900kWh"
+                />
               )}
             </View>
           </View>
         )}
 
+        {/* ── Gas rates ─────────────────────────────────────────────── */}
         {t.gas?.unitRate && (
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins',
-              letterSpacing: 0.5, marginBottom: 10 }}>🔥 GAS RATES</Text>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <RateBox label="Unit Rate" value={`${t.gas.unitRate}p`}
-                unit="per kWh incl. VAT" isDark={isDark} />
-              <RateBox label="Standing Charge" value={`${t.gas.standingCharge}p`}
-                unit="per day incl. VAT" isDark={isDark} />
+          <View className="mb-4">
+            <Text className="text-xs font-sans tracking-[0.5px] mb-2.5 text-[#4A6A82] dark:text-brand-fg-muted">
+              🔥 GAS RATES
+            </Text>
+            <View className="flex-row gap-2.5">
+              <RateBox
+                label="Unit Rate"
+                value={`${t.gas.unitRate}p`}
+                unit="per kWh incl. VAT"
+              />
+              <RateBox
+                label="Standing Charge"
+                value={`${t.gas.standingCharge}p`}
+                unit="per day incl. VAT"
+              />
               {gasCost && (
-                <RateBox label="Annual Cost" value={`£${gasCost.toLocaleString()}`}
-                  unit="at UK avg 11500kWh" isDark={isDark} />
+                <RateBox
+                  label="Annual Cost"
+                  value={`£${gasCost.toLocaleString()}`}
+                  unit="at UK avg 11500kWh"
+                />
               )}
             </View>
           </View>
         )}
 
-        {/* ── Contract details ── */}
-        <View style={{
-          backgroundColor: cardBg, borderRadius: 14, padding: 16,
-          borderWidth: 1, borderColor: borderC, marginBottom: 12,
-        }}>
-          <Text style={{ color: textFg, fontSize: 14, fontWeight: '600',
-            fontFamily: 'Poppins-SemiBold', marginBottom: 4 }}>Contract Details</Text>
-          <Row label="Contract length"
+        {/* ── Contract details card ─────────────────────────────────── */}
+        <View className="bg-card rounded-card p-4 border border-border mb-3">
+          <Text className="text-sm font-semibold text-brand dark:text-brand-fg mb-1">
+            Contract Details
+          </Text>
+          <Row
+            label="Contract length"
             value={t.contractLengthMonths > 0 ? `${t.contractLengthMonths} months` : 'No fixed term'}
-            isDark={isDark} />
-          <Row label="Exit fee"
+          />
+          <Row
+            label="Exit fee"
             value={t.exitFee > 0 ? `£${t.exitFee} per fuel` : 'No exit fee'}
-            isDark={isDark} />
+          />
           {t.cashback > 0 && (
-            <Row label="Cashback" value={`£${t.cashback}`} highlight isDark={isDark} />
+            <Row label="Cashback" value={`£${t.cashback}`} highlight />
           )}
-          <Row label="Smart meter required"
-            value={t.smartMeterRequired ? 'Yes' : 'No'} isDark={isDark} />
-          <Row label="Fuel type"
+          <Row
+            label="Smart meter required"
+            value={t.smartMeterRequired ? 'Yes' : 'No'}
+          />
+          <Row
+            label="Fuel type"
             value={t.fuelType.charAt(0).toUpperCase() + t.fuelType.slice(1)}
-            isDark={isDark} />
-          <Row label="Data source"
+          />
+          <Row
+            label="Data source"
             value={t.isLive ? 'Live — Octopus API' : 'Ofgem cap rate'}
-            highlight={!!t.isLive} isDark={isDark} />
+            highlight={!!t.isLive}
+          />
           {t.lastUpdated && (
-            <Row label="Last updated"
+            <Row
+              label="Last updated"
               value={new Date(t.lastUpdated).toLocaleDateString('en-GB', {
                 day: '2-digit', month: 'short', year: 'numeric',
               })}
-              isDark={isDark} />
+            />
           )}
         </View>
 
-        {/* ── Features ── */}
+        {/* ── Features card ─────────────────────────────────────────── */}
         {t.features && t.features.length > 0 && (
-          <View style={{
-            backgroundColor: cardBg, borderRadius: 14, padding: 16,
-            borderWidth: 1, borderColor: borderC, marginBottom: 12,
-          }}>
-            <Text style={{ color: textFg, fontSize: 14, fontWeight: '600',
-              fontFamily: 'Poppins-SemiBold', marginBottom: 12 }}>What's included</Text>
+          <View className="bg-card rounded-card p-4 border border-border mb-3">
+            <Text className="text-sm font-semibold text-brand dark:text-brand-fg mb-3">
+              What's included
+            </Text>
             {t.features.map((f, i) => (
-              <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start',
-                gap: 10, paddingVertical: 5 }}>
-                <View style={{ width: 18, height: 18, borderRadius: 9,
-                  backgroundColor: '#2272A620', alignItems: 'center',
-                  justifyContent: 'center', marginTop: 1 }}>
+              <View key={i} className="flex-row items-start gap-2.5 py-1">
+                {/* Check circle — w-4.5 h-4.5 = 18px closest is w-5 (20px), use style */}
+                <View
+                  className="bg-primary/13 rounded-full items-center justify-center mt-0.5"
+                  style={{ width: 18, height: 18 }}
+                >
                   <Svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <Path d="M2 5l2 2 4-4" stroke={B.blue} strokeWidth="1.5"
-                      strokeLinecap="round" strokeLinejoin="round" />
+                    <Path
+                      d="M2 5l2 2 4-4"
+                      stroke="#2272A6"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </Svg>
                 </View>
-                <Text style={{ color: isDark ? '#D9E8F5' : '#2C3E50', fontSize: 13,
-                  fontFamily: 'Poppins', flex: 1, lineHeight: 20 }}>{f}</Text>
+                <Text className="text-sm font-sans flex-1 leading-5 text-brand dark:text-brand-fg">
+                  {f}
+                </Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* ── Disclaimer ── */}
-        <View style={{
-          backgroundColor: isDark ? '#1E3A52' : '#F0F6FB', borderRadius: 10, padding: 12,
-          borderWidth: 1, borderColor: borderC,
-        }}>
-          <Text style={{ color: mutedFg, fontSize: 11, fontFamily: 'Poppins', lineHeight: 17 }}>
+        {/* ── Disclaimer ────────────────────────────────────────────── */}
+        <View className="bg-primary/6 dark:bg-brand-selected rounded-banner p-3 border border-border">
+          <Text className="text-xs font-sans leading-[17px] text-[#4A6A82] dark:text-brand-fg-muted">
             {t.isLive
               ? '✓ Rates sourced live from Octopus Energy API and include VAT. Actual bills may vary based on usage.'
               : '⚠ Rates based on Ofgem price cap and supplier discount estimates. Verify with supplier before switching.'}
           </Text>
         </View>
+
       </ScrollView>
     </View>
   );

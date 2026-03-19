@@ -2,15 +2,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
+import { Icon } from '@/components/ui/icon';
 import { AuthHeader } from '@/components/shared/auth-header';
 import { KeyboardView } from '@/components/shared/keyboard-view';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Mail } from 'lucide-react-native';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, View } from 'react-native';
-import Svg, { Path, Rect } from 'react-native-svg';
 import { z } from 'zod';
 
 const forgotSchema = z.object({
@@ -18,20 +18,11 @@ const forgotSchema = z.object({
 });
 type ForgotFormData = z.infer<typeof forgotSchema>;
 
-function MailIcon() {
-  return (
-    <Svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <Rect x="2" y="4" width="20" height="16" rx="2" stroke="#2DD4A0" strokeWidth="2" />
-      <Path d="M2 7l10 7 10-7" stroke="#2DD4A0" strokeWidth="2" strokeLinecap="round" />
-    </Svg>
-  );
-}
-
 function BackButton() {
   return (
     <Pressable onPress={() => router.back()} hitSlop={12} className="flex-row items-center gap-2">
-      <ArrowLeft size={18} color="#8BA8C4" />
-      <Text style={{ color: '#8BA8C4', fontSize: 14 }}>Back</Text>
+      <Icon as={ArrowLeft} size={18} className="text-muted-foreground" />
+      <Text className="text-sm text-muted-foreground">Back</Text>
     </Pressable>
   );
 }
@@ -59,7 +50,7 @@ export default function ForgotPasswordScreen() {
     return (
       <View className="flex-1 bg-background">
         <AuthHeader
-          icon={<MailIcon />}
+          icon={<Icon as={Mail} size={26} className="text-primary" />}
           title="Check your email"
           subtitle="Reset link has been sent"
           topLeft={<BackButton />}
@@ -87,7 +78,7 @@ export default function ForgotPasswordScreen() {
   return (
     <KeyboardView>
       <AuthHeader
-        icon={<MailIcon />}
+        icon={<Icon as={Mail} size={26} className="text-primary" />}
         title="Reset password"
         subtitle="We'll send you a reset link"
         topLeft={<BackButton />}
