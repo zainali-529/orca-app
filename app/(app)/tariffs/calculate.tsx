@@ -28,9 +28,6 @@ const TOP_TABS = [
   { id: 'calculate', label: 'Calculator', route: '/(app)/tariffs/calculate' },
 ];
 
-
-  const { colorScheme } = useColorScheme();
-  const textColor = colorScheme === 'dark' ? '#F0F8FF' : '#0D2C40';
 // ─── Top nav tabs ─────────────────────────────────────────────────────────────
 
 function TopTabs({ active }: { active: string }) {
@@ -67,6 +64,10 @@ function InputField({ label, value, onChangeText, placeholder, hint }: {
   label: string; value: string; onChangeText: (v: string) => void;
   placeholder: string; hint?: string;
 }) {
+  // ✅ Hook is now correctly called INSIDE the component
+  const { colorScheme } = useColorScheme();
+  const textColor = colorScheme === 'dark' ? '#F0F8FF' : '#0D2C40';
+
   return (
     <View className="gap-1.5">
       <Text className="text-sm font-semibold text-brand dark:text-brand-fg">
@@ -319,7 +320,7 @@ function TariffPicker({ tariffs, selectedId, onSelect }: {
               ].join(' ')}
               style={{ borderWidth: isSelected ? 1.5 : 1 }}
             >
-              {/* Radio circle — w-5.5 h-5.5 = 22px  (config › spacing.5.5) */}
+              {/* Radio circle */}
               <View
                 className={[
                   'w-5.5 h-5.5 rounded-full items-center justify-center',
@@ -484,9 +485,7 @@ export default function CalculatorScreen() {
           </View>
         ) : null}
 
-        {/* Calculate button
-            h-12 = 48px, rounded-card = 14px  (config tokens)
-            disabled → muted bg instead of primary                        */}
+        {/* Calculate button */}
         <Pressable
           onPress={handleCalculate}
           disabled={isCalculating || !selectedId}
