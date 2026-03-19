@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
+import { Icon } from '@/components/ui/icon';
 import { AuthHeader } from '@/components/shared/auth-header';
 import { KeyboardView } from '@/components/shared/keyboard-view';
 import { useAuthStore } from '@/lib/store/auth.store';
@@ -11,7 +12,6 @@ import { Eye, EyeOff, Zap } from 'lucide-react-native';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, View } from 'react-native';
-import Svg, { Path, Polygon } from 'react-native-svg';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -20,21 +20,6 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
-
-function ZapIcon() {
-  return (
-    <Svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <Polygon
-        points="13,2 3,14 12,14 11,22 21,10 12,10"
-        fill="none"
-        stroke="#2DD4A0"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
 
 export default function LoginScreen() {
   const { login, isLoading } = useAuthStore();
@@ -64,7 +49,7 @@ export default function LoginScreen() {
     <KeyboardView>
 
       <AuthHeader
-        icon={<ZapIcon />}
+        icon={<Icon as={Zap} size={26} className="text-primary" />}
         title="Welcome back"
         subtitle="Sign in to your account"
       />
@@ -133,9 +118,7 @@ export default function LoginScreen() {
                     className="absolute right-3 top-2.5"
                     onPress={() => setShowPassword((p) => !p)}
                     hitSlop={12}>
-                    {showPassword
-                      ? <EyeOff size={20} color="#8BA8C4" />
-                      : <Eye size={20} color="#8BA8C4" />}
+                    <Icon as={showPassword ? EyeOff : Eye} size={20} className="text-muted-foreground" />
                   </Pressable>
                 </View>
               )}

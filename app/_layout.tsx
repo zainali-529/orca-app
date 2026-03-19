@@ -55,13 +55,17 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
+  // Make sure we resolve the actual theme before returning anything to keep hooks consistent
+  const theme = NAV_THEME[colorScheme ?? 'light'];
+  const statusBarStyle = colorScheme === 'dark' ? 'light' : 'dark';
+
   // Don't render until fonts are ready — prevents FOUT (flash of unstyled text)
   if (!fontsLoaded) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <ThemeProvider value={theme}>
+        <StatusBar style={statusBarStyle} />
         <Stack screenOptions={{ headerShown: false }} />
         <PortalHost />
       </ThemeProvider>

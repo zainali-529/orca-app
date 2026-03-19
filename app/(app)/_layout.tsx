@@ -3,148 +3,215 @@ import { useProfileStore } from '@/lib/store/profile.store';
 import { Redirect, Tabs } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { ActivityIndicator, View, Pressable, StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, Zap, FileText, Users, Menu } from 'lucide-react-native';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-// ── Tab icons ──────────────────────────────────────────────
-function HomeIcon({ color, size }: { color: string; size: number }) {
+function TabBarButton({ onPress, onLongPress, isFocused, label, activeColor, inactiveColor, isDark, icon: Icon }: any) {
+  // Use a faster spring configuration for snappier interactions
+  const springConfig = { damping: 15, stiffness: 250, mass: 1 };
+  const timingConfig = { duration: 150 };
+
+  const animatedIconStyle = useAnimatedStyle(() => {
+    return {
+      // Very slight lift, or keep it 0 if you don't want vertical movement
+      transform: [
+        { translateY: withSpring(isFocused ? -2 : 0, springConfig) },
+      ],
+    };
+  }, [isFocused]);
+
+  const animatedBgStyle = useAnimatedStyle(() => {
+    return {
+      // The background pill scales up quickly
+      opacity: withTiming(isFocused ? 1 : 0, timingConfig),
+      transform: [{ scaleX: withSpring(isFocused ? 1 : 0.4, springConfig) }, { scaleY: withSpring(isFocused ? 1 : 0.4, springConfig) }]
+    }
+  }, [isFocused]);
+
+  // Determine icon and text colors
+  // Inactive: light mode -> dark (#000), dark mode -> light (#FFF)
+  // Active: theme primary color (or custom active color)
+  const currentIconColor = isFocused ? (isDark ? '#2272A6' : '#2272A6') : inactiveColor;
+  const currentTextColor = isFocused ? (isDark ? '#FFFFFF' : '#000000') : inactiveColor;
+  
+  // The background pill color for active state
+  // Using a translucent version of the primary color or a specific brand color
+  const activeBgColor = isDark ? 'rgba(34, 114, 166, 0.25)' : 'rgba(34, 114, 166, 0.15)'; // Example green-ish or brand color
+
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M9 22V12h6v10" stroke={color} strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={styles.tabButton}
+    >
+      <Animated.View style={[styles.iconContainer, animatedIconStyle]}>
+        <Animated.View style={[
+          StyleSheet.absoluteFill, 
+          styles.iconBg, 
+          { backgroundColor: activeBgColor }, 
+          animatedBgStyle
+        ]} />
+        <Icon color={currentIconColor} size={22} strokeWidth={isFocused ? 2.5 : 2} />
+      </Animated.View>
+      
+      <Animated.Text style={[
+        styles.tabLabel,
+        { 
+          color: currentTextColor,
+          fontWeight: isFocused ? '600' : '500',
+        }
+      ]}>
+        {label}
+      </Animated.Text>
+    </Pressable>
   );
 }
-function ZapIcon({ color, size }: { color: string; size: number }) {
+
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const insets = useSafeAreaInsets();
+  
+  const bgColor = isDark ? '#111214' : '#FFFFFF'; // Card background from theme
+  
+  // Inactive icons should be light in dark mode, dark in light mode
+  const inactiveTint = isDark ? '#A0A0A0' : '#606060'; 
+  const activeTint = '#2272A6'; // We handle the active contrast inside TabBarButton
+  const borderColor = isDark ? '#2D2F31' : '#EBEBEB'; // Divider color
+
+  const icons: any = {
+    index: Home,
+    tariffs: Zap,
+    quotes: FileText,
+    clients: Users,
+    more: Menu,
+  };
+
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
+    <View style={[
+      styles.tabBarContainer,
+      {
+        backgroundColor: bgColor,
+        borderTopColor: borderColor,
+        paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
+        height: 65 + (insets.bottom > 0 ? insets.bottom : 12),
+      }
+    ]}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const label = options.title !== undefined ? options.title : route.name;
+        const isFocused = state.index === index;
+        const Icon = icons[route.name] || Home;
+
+        const onPress = () => {
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+        };
+
+        const onLongPress = () => navigation.emit({ type: 'tabLongPress', target: route.key });
+
+        return (
+          <TabBarButton
+            key={route.key}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            isFocused={isFocused}
+            label={label as string}
+            activeColor={activeTint}
+            inactiveColor={inactiveTint}
+            isDark={isDark}
+            icon={Icon}
+          />
+        );
+      })}
+    </View>
   );
 }
-function FileIcon({ color, size }: { color: string; size: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-function UsersIcon({ color, size }: { color: string; size: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Circle cx="9" cy="7" r="4" stroke={color} strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-function MenuIcon({ color, size }: { color: string; size: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M4 6h16M4 12h16M4 18h16"
-        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
+
+const styles = StyleSheet.create({
+  tabBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    paddingTop: 8,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 4,
+    height: '100%',
+  },
+  iconContainer: {
+    width: 64, // Wider for pill shape
+    height: 32, // Shorter height for horizontal pill
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16, // Pill rounded edges
+  },
+  iconBg: {
+    borderRadius: 16, // Pill rounded edges
+  },
+  tabLabel: {
+    position: 'absolute',
+    top: 37,
+    fontSize: 12,
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+  }
+});
 
 export default function AppLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { onboardingStatus, loadOnboardingStatus } = useProfileStore();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   React.useEffect(() => {
     if (isAuthenticated) loadOnboardingStatus();
   }, [isAuthenticated]);
 
-  if (!isAuthenticated) return <Redirect href="/(auth)/login" />;
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   if (onboardingStatus === null) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center',
-        backgroundColor: isDark ? '#0E1923' : '#F0F4F8' }}>
-        <ActivityIndicator size="large" color="#2272A6" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!onboardingStatus.isCompleted) {
     return <Redirect href="/(profile-setup)/step-1" />;
   }
 
-  const activeTint   = '#2272A6';
-  const inactiveTint = isDark ? '#4A6A82' : '#8BA8C4';
-  const tabBg        = isDark ? '#0D1F2E' : '#FFFFFF';
-  const borderColor  = isDark ? '#1E3A52' : '#E2EAF0';
-
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor:   activeTint,
-        tabBarInactiveTintColor: inactiveTint,
-        tabBarStyle: {
-          backgroundColor: tabBg,
-          borderTopWidth:  1,
-          borderTopColor:  borderColor,
-          height:          60,
-          paddingBottom:   8,
-          paddingTop:      6,
-          elevation:       0,
-          shadowOpacity:   0,
-        },
-        tabBarLabelStyle: {
-          fontSize:    10,
-          fontFamily:  'Poppins',
-          fontWeight:  '600',
-          marginTop:   2,
-        },
       }}>
-
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <HomeIcon color={color} size={22} />,
-        }}
-      />
-      <Tabs.Screen
-        name="tariffs"
-        options={{
-          title: 'Tariffs',
-          tabBarIcon: ({ color }) => <ZapIcon color={color} size={22} />,
-        }}
-      />
-      <Tabs.Screen
-        name="quotes"
-        options={{
-          title: 'Quotes',
-          tabBarIcon: ({ color }) => <FileIcon color={color} size={22} />,
-        }}
-      />
-      <Tabs.Screen
-        name="clients"
-        options={{
-          title: 'Clients',
-          tabBarIcon: ({ color }) => <UsersIcon color={color} size={22} />,
-        }}
-      />
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: 'More',
-          tabBarIcon: ({ color }) => <MenuIcon color={color} size={22} />,
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Dashboard' }} />
+      <Tabs.Screen name="tariffs" options={{ title: 'Tariffs' }} />
+      <Tabs.Screen name="quotes" options={{ title: 'Quotes' }} />
+      <Tabs.Screen name="clients" options={{ title: 'Clients' }} />
+      <Tabs.Screen name="more" options={{ title: 'More' }} />
     </Tabs>
+  );
+}
+
+function LoadingScreen() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center',
+      backgroundColor: isDark ? '#111214' : '#F8F7F5' }}>
+      <ActivityIndicator size="large" color="#2272A6" />
+    </View>
   );
 }
