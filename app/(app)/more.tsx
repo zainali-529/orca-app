@@ -1,47 +1,54 @@
-import { Text } from '@/components/ui/text';
-import { useAuthStore } from '@/lib/store/auth.store';
-import { useProfileStore } from '@/lib/store/profile.store';
+import { Text }           from '@/components/ui/text';
+import { useAuthStore }     from '@/lib/store/auth.store';
+import { useProfileStore }  from '@/lib/store/profile.store';
+import { useDocumentStore } from '@/lib/store/document.store';
+import { useSwitchStore }   from '@/lib/store/switch.store';
+import { useConsultationStore } from '@/lib/store/consultation.store';
 import { getSyncStatusApi } from '@/lib/api/tariff.api';
-import { router } from 'expo-router';
-import { useColorScheme } from 'nativewind';
-import * as React from 'react';
+import { router }           from 'expo-router';
+import { useColorScheme }   from 'nativewind';
+import * as React           from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
-// ─── Menu item ────────────────────────────────────────────────────────────────
+// ─── MenuItem ─────────────────────────────────────────────────────
 
-function MenuItem({ icon, label, sub, onPress, danger, badge }: {
-  icon: React.ReactNode; label: string; sub?: string;
-  onPress: () => void; danger?: boolean; badge?: string;
+function MenuItem({ icon, label, sub, onPress, danger, badge, badgeColor = 'orange' }: {
+  icon:        React.ReactNode;
+  label:       string;
+  sub?:        string;
+  onPress:     () => void;
+  danger?:     boolean;
+  badge?:      string;
+  badgeColor?: 'orange' | 'blue' | 'teal';
 }) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  const badgeStyles = {
+    orange: 'bg-orange-500/15 border-orange-500/25',
+    blue:   'bg-primary/13 border-primary/25',
+    teal:   'bg-brand-teal/10 border-brand-teal/25',
+  };
+  const badgeTextStyles = {
+    orange: 'text-orange-400',
+    blue:   'text-brand-blue-bright',
+    teal:   'text-brand-teal',
+  };
+
   return (
     <Pressable onPress={onPress}>
       <View className="flex-row items-center gap-3.5 py-3.5 px-4">
-        {/* Icon box — w-9.5 h-9.5 = 38px … closest is w-10 (40) or style */}
         <View
-          className={[
-            'items-center justify-center rounded-xl',
-            danger
-              ? 'bg-destructive/8'
-              : 'bg-primary/6 dark:bg-border/20',
-          ].join(' ')}
+          className={['items-center justify-center rounded-xl',
+            danger ? 'bg-destructive/8' : 'bg-primary/6 dark:bg-border/20'].join(' ')}
           style={{ width: 38, height: 38 }}
         >
           {icon}
         </View>
-
         <View className="flex-1">
-          <Text
-            className={[
-              'text-sm font-sans',
-              danger
-                ? 'text-destructive'
-                : 'text-brand dark:text-brand-fg',
-            ].join(' ')}
-          >
+          <Text className={['text-sm font-sans',
+            danger ? 'text-destructive' : 'text-brand dark:text-brand-fg'].join(' ')}>
             {label}
           </Text>
           {sub && (
@@ -50,26 +57,23 @@ function MenuItem({ icon, label, sub, onPress, danger, badge }: {
             </Text>
           )}
         </View>
-
         {badge ? (
-          <View className="bg-primary/13 rounded-lg px-2 py-1">
-            <Text className="text-xs font-sans text-primary">{badge}</Text>
+          <View className={`border rounded-lg px-2 py-1 ${badgeStyles[badgeColor]}`}>
+            <Text className={`text-xs font-semibold ${badgeTextStyles[badgeColor]}`}>
+              {badge}
+            </Text>
           </View>
         ) : (
           <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M9 18l6-6-6-6"
+            <Path d="M9 18l6-6-6-6"
               stroke={isDark ? '#4A6A82' : '#8BA8C4'}
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            />
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </Svg>
         )}
       </View>
     </Pressable>
   );
 }
-
-// ─── Section header ───────────────────────────────────────────────────────────
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -79,56 +83,93 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
+// Coming soon — Smart Meter + Payments + Notifications remain here
 const COMING_SOON_ITEMS = [
-  { label: 'Switch Tracker',  sub: 'Track progress of energy switches',   icon: '🔄' },
-  { label: 'Document Vault',  sub: 'LOAs, contracts & signed quotes',      icon: '🗂️' },
   { label: 'Smart Meter',     sub: 'Readings & consumption data',          icon: '📡' },
   { label: 'Payments',        sub: 'Commission & GoCardless integration',  icon: '💳' },
   { label: 'Notifications',   sub: 'Contract renewals & alerts',           icon: '🔔' },
 ];
 
+// ─── Screen ───────────────────────────────────────────────────────
+
 export default function MoreScreen() {
-  const { user, logout } = useAuthStore();
-  const { profile }      = useProfileStore();
+  const { user, logout }     = useAuthStore();
+  const { profile }          = useProfileStore();
+  const { documents, loadDocuments } = useDocumentStore();
+  const { switches, summary, loadSwitches, loadSummary } = useSwitchStore();
+  const { summary: consultSummary, loadSummary: loadConsultSummary } = useConsultationStore();
 
   const [syncStatus, setSyncStatus] = React.useState<any>(null);
 
   React.useEffect(() => {
-    getSyncStatusApi()
-      .then(r => setSyncStatus(r.data.data))
-      .catch(() => {});
+    getSyncStatusApi().then((r) => setSyncStatus(r.data.data)).catch(() => {});
+    loadDocuments({ limit: 50 });
+    loadSwitches({ limit: 20 });
+    loadSummary();
+    loadConsultSummary();
   }, []);
 
   const handleLogout = () => {
     Alert.alert('Sign out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Sign out', style: 'destructive', onPress: async () => {
-        await logout(); router.replace('/(auth)/login');
+        await logout();
+        router.replace('/(auth)/login');
       }},
     ]);
   };
 
+  // Document badge
+  const pendingDocs    = documents.filter((d) => d.status === 'pending_signature').length;
+  const signedDocs     = documents.filter((d) => d.status === 'signed').length;
+  const brokerSentDocs = documents.filter((d) => d.sentByAdmin && d.status === 'pending_signature').length;
+
+  const docBadge      = brokerSentDocs > 0 ? `${brokerSentDocs} from broker` : pendingDocs > 0 ? `${pendingDocs} pending` : undefined;
+  const docBadgeColor = (brokerSentDocs > 0 ? 'blue' : 'orange') as 'blue' | 'orange';
+  const docSub = pendingDocs > 0
+    ? `${pendingDocs} awaiting signature${brokerSentDocs > 0 ? ` (${brokerSentDocs} from broker)` : ''}`
+    : signedDocs > 0 ? `${signedDocs} signed document${signedDocs !== 1 ? 's' : ''}`
+    : 'Letters of Authority & contracts';
+
+  // Switch badge
+  const activeSwitches    = summary?.active ?? 0;
+  const completedSwitches = summary?.completed ?? 0;
+  const coolingOffCount   = summary?.cooling_off ?? 0;
+  const objectedCount     = summary?.objected ?? 0;
+
+  const switchBadge = objectedCount > 0
+    ? `${objectedCount} objection`
+    : coolingOffCount > 0
+    ? `${coolingOffCount} cooling off`
+    : activeSwitches > 0
+    ? `${activeSwitches} active`
+    : undefined;
+
+  const switchBadgeColor = (objectedCount > 0 ? 'orange' : activeSwitches > 0 ? 'blue' : 'teal') as 'orange' | 'blue' | 'teal';
+
+  const switchSub = activeSwitches > 0
+    ? `${activeSwitches} active switch${activeSwitches !== 1 ? 'es' : ''}${completedSwitches > 0 ? ` · ${completedSwitches} completed` : ''}`
+    : completedSwitches > 0
+    ? `${completedSwitches} completed switch${completedSwitches !== 1 ? 'es' : ''}`
+    : 'Track your energy switches';
+
   return (
     <View className="flex-1 bg-background">
 
-      {/* ── Header — always brand navy ──────────────────────────── */}
+      {/* ── Header ── */}
       <View className="bg-brand pt-14 pb-6 px-5">
         <Text className="text-xl font-bold text-brand-fg">More</Text>
         <Text className="text-sm font-sans mt-1 text-brand-fg-muted">
-          Settings & account
+          Switches, documents & account
         </Text>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}>
 
-        {/* ── Profile card ─────────────────────────────────────────── */}
+        {/* Profile card */}
         <View className="p-4">
           <View className="bg-card rounded-2xl p-4 border border-border flex-row items-center gap-3.5">
-
-            {/* Avatar circle — w-13 h-13 = 52px … use style */}
             <View
               className="rounded-full bg-primary/13 border-2 border-primary/25 items-center justify-center"
               style={{ width: 52, height: 52 }}
@@ -137,7 +178,6 @@ export default function MoreScreen() {
                 {user?.firstName?.[0]?.toUpperCase()}{user?.lastName?.[0]?.toUpperCase()}
               </Text>
             </View>
-
             <View className="flex-1">
               <Text className="text-base font-semibold text-brand dark:text-brand-fg">
                 {user?.firstName} {user?.lastName}
@@ -146,15 +186,83 @@ export default function MoreScreen() {
                 {user?.email}
               </Text>
               {profile?.companyName && (
-                <Text className="text-xs font-sans mt-0.5 text-primary">
-                  {profile.companyName}
-                </Text>
+                <Text className="text-xs font-sans mt-0.5 text-primary">{profile.companyName}</Text>
               )}
             </View>
           </View>
         </View>
 
-        {/* ── Tariff data section ───────────────────────────────────── */}
+        {/* ── SWITCH TRACKER — now a real section, no longer "Coming Soon" ── */}
+        <SectionHeader title="SWITCH TRACKER" />
+        <View className="bg-card rounded-2xl mx-4 border border-border overflow-hidden">
+          <MenuItem
+            label="My Switches"
+            sub={switchSub}
+            badge={switchBadge}
+            badgeColor={switchBadgeColor}
+            onPress={() => router.push('/(app)/switches' as any)}
+            icon={<Text style={{ fontSize: 18 }}>🔄</Text>}
+          />
+        </View>
+
+        {/* ── CONSULTATIONS ── */}
+        <SectionHeader title="CONSULTATIONS" />
+        <View className="bg-card rounded-2xl mx-4 border border-border overflow-hidden">
+          <MenuItem
+            label="My Consultations"
+            sub={
+              (consultSummary?.awaiting_payment ?? 0) > 0
+                ? `${consultSummary!.awaiting_payment} payment pending`
+                : (consultSummary?.upcoming ?? 0) > 0
+                ? `${consultSummary!.upcoming} upcoming session${consultSummary!.upcoming !== 1 ? 's' : ''}`
+                : (consultSummary?.active ?? 0) > 0
+                ? `${consultSummary!.active} active`
+                : 'Expert 1-on-1 energy sessions'
+            }
+            badge={
+              (consultSummary?.awaiting_payment ?? 0) > 0
+                ? `${consultSummary!.awaiting_payment} pay now`
+                : (consultSummary?.upcoming ?? 0) > 0
+                ? `${consultSummary!.upcoming} upcoming`
+                : undefined
+            }
+            badgeColor={
+              (consultSummary?.awaiting_payment ?? 0) > 0 ? 'orange' :
+              (consultSummary?.upcoming ?? 0) > 0 ? 'blue' : 'teal'
+            }
+            onPress={() => router.push('/(app)/consultations' as any)}
+            icon={<Text style={{ fontSize: 18 }}>💡</Text>}
+          />
+          <View className="h-px bg-border ml-[68px]" />
+          <MenuItem
+            label="Book a Consultation"
+            sub="Tariff review, switch advice, energy audit &amp; more"
+            onPress={() => router.push('/(app)/consultations/book' as any)}
+            icon={<Text style={{ fontSize: 18 }}>📅</Text>}
+          />
+        </View>
+
+        {/* ── DOCUMENTS ── */}
+        <SectionHeader title="DOCUMENTS" />
+        <View className="bg-card rounded-2xl mx-4 border border-border overflow-hidden">
+          <MenuItem
+            label="My Documents"
+            sub={docSub}
+            badge={docBadge}
+            badgeColor={docBadgeColor}
+            onPress={() => router.push('/(app)/documents' as any)}
+            icon={<Text style={{ fontSize: 18 }}>📋</Text>}
+          />
+          <View className="h-px bg-border ml-[68px]" />
+          <MenuItem
+            label="Sign Letter of Authority"
+            sub="Authorise us to compare & switch on your behalf"
+            onPress={() => router.push('/(app)/documents' as any)}
+            icon={<Text style={{ fontSize: 18 }}>✍️</Text>}
+          />
+        </View>
+
+        {/* ── TARIFF DATA ── */}
         <SectionHeader title="TARIFF DATA" />
         <View className="bg-card rounded-2xl mx-4 border border-border overflow-hidden">
           <MenuItem
@@ -173,15 +281,11 @@ export default function MoreScreen() {
               </Svg>
             }
           />
-
-          {/* Sync status detail */}
           {syncStatus && (
             <View className="px-4 pb-3.5">
               <View className="flex-row gap-2 flex-wrap">
                 <View className="bg-primary/8 rounded-lg px-2.5 py-1">
-                  <Text className="text-xs font-sans text-primary">
-                    🔴 Live: {syncStatus.tariffCounts.live}
-                  </Text>
+                  <Text className="text-xs font-sans text-primary">🔴 Live: {syncStatus.tariffCounts.live}</Text>
                 </View>
                 <View className="bg-primary/6 dark:bg-brand rounded-lg px-2.5 py-1">
                   <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
@@ -204,7 +308,7 @@ export default function MoreScreen() {
           )}
         </View>
 
-        {/* ── Account section ───────────────────────────────────────── */}
+        {/* ── ACCOUNT ── */}
         <SectionHeader title="ACCOUNT" />
         <View className="bg-card rounded-2xl mx-4 border border-border overflow-hidden">
           <MenuItem
@@ -219,7 +323,6 @@ export default function MoreScreen() {
               </Svg>
             }
           />
-          {/* Divider */}
           <View className="h-px bg-border ml-[68px]" />
           <MenuItem
             label="Energy Details"
@@ -234,64 +337,47 @@ export default function MoreScreen() {
           />
         </View>
 
-        {/* ── Coming soon section ───────────────────────────────────── */}
+        {/* ── COMING SOON (reduced — Switch Tracker moved out) ── */}
         <SectionHeader title="COMING SOON" />
         <View className="bg-card rounded-2xl mx-4 border border-border overflow-hidden">
           {COMING_SOON_ITEMS.map((item, i) => (
             <React.Fragment key={item.label}>
               <View className="flex-row items-center gap-3.5 py-3 px-4 opacity-60">
-                <View
-                  className="bg-primary/6 dark:bg-brand rounded-xl items-center justify-center"
-                  style={{ width: 38, height: 38 }}
-                >
+                <View className="bg-primary/6 dark:bg-brand rounded-xl items-center justify-center"
+                  style={{ width: 38, height: 38 }}>
                   <Text style={{ fontSize: 18 }}>{item.icon}</Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-sans text-brand dark:text-brand-fg">
-                    {item.label}
-                  </Text>
-                  <Text className="text-xs font-sans mt-0.5 text-[#4A6A82] dark:text-brand-fg-muted">
-                    {item.sub}
-                  </Text>
+                  <Text className="text-sm font-sans text-brand dark:text-brand-fg">{item.label}</Text>
+                  <Text className="text-xs font-sans mt-0.5 text-[#4A6A82] dark:text-brand-fg-muted">{item.sub}</Text>
                 </View>
                 <View className="bg-primary/6 dark:bg-brand rounded-lg px-2 py-1">
-                  <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
-                    Soon
-                  </Text>
+                  <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">Soon</Text>
                 </View>
               </View>
-              {i < COMING_SOON_ITEMS.length - 1 && (
-                <View className="h-px bg-border ml-[68px]" />
-              )}
+              {i < COMING_SOON_ITEMS.length - 1 && <View className="h-px bg-border ml-[68px]" />}
             </React.Fragment>
           ))}
         </View>
 
-        {/* ── Sign out ──────────────────────────────────────────────── */}
+        {/* ── SIGN OUT ── */}
         <View className="bg-card rounded-2xl mx-4 mt-4 border border-border overflow-hidden">
           <MenuItem
-            label="Sign Out"
-            sub="Log out of your account"
-            danger
-            onPress={handleLogout}
+            label="Sign Out" sub="Log out of your account" danger onPress={handleLogout}
             icon={
               <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <Path
-                  d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
-                  stroke="#E24B4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                />
+                <Path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+                  stroke="#E24B4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
             }
           />
         </View>
 
-        {/* ── App version ───────────────────────────────────────────── */}
         <View className="items-center py-6">
           <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">
             Energy Broker v1.0.0 · Built with ⚡
           </Text>
         </View>
-
       </ScrollView>
     </View>
   );

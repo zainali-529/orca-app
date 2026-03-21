@@ -9,6 +9,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   Poppins_400Regular,
@@ -62,7 +63,10 @@ export default function RootLayout() {
   // Don't render until fonts are ready — prevents FOUT (flash of unstyled text)
   if (!fontsLoaded) return null;
 
+  const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+
   return (
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={theme}>
         <StatusBar style={statusBarStyle} />
@@ -70,5 +74,6 @@ export default function RootLayout() {
         <PortalHost />
       </ThemeProvider>
     </QueryClientProvider>
+    </StripeProvider>
   );
 }

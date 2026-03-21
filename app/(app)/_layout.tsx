@@ -102,6 +102,10 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     ]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
+        
+        // Only render tabs that are explicitly defined in our icons object
+        if (!icons[route.name]) return null;
+
         const label = options.title !== undefined ? options.title : route.name;
         const isFocused = state.index === index;
         const Icon = icons[route.name] || Home;
@@ -200,6 +204,7 @@ export default function AppLayout() {
       <Tabs.Screen name="quotes" options={{ title: 'Quotes' }} />
       <Tabs.Screen name="clients" options={{ title: 'Clients' }} />
       <Tabs.Screen name="more" options={{ title: 'More' }} />
+      <Tabs.Screen name="documents" options={{ href: null }} />
     </Tabs>
   );
 }
