@@ -558,7 +558,7 @@ export default function DocumentsIndexScreen() {
           data={documents}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => <DocumentCard doc={item} />}
-          contentContainerStyle={{ padding: 14, paddingBottom: 120, flexGrow: 1 }}
+          contentContainerStyle={{ padding: 14, paddingBottom: 80, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2272A6" />

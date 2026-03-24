@@ -256,7 +256,7 @@ export default function QuoteDetailScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View style={contentStyle} className="gap-3">

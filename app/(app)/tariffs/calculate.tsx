@@ -421,7 +421,7 @@ export default function CalculatorScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >

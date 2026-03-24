@@ -288,7 +288,7 @@ export default function BrowseScreen() {
           data={tariffs}
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
-          contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
+          contentContainerStyle={{ padding: 14, paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
 
           ListEmptyComponent={

@@ -483,7 +483,7 @@ export default function SwitchDetailScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >

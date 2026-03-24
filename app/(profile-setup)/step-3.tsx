@@ -169,18 +169,41 @@ function AddrFields({
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Step3Screen() {
-  const { saveStep3, isLoading } = useProfileStore();
+  const { profile, saveStep3, isLoading } = useProfileStore();
 
   const [sameAddress, setSameAddress] = React.useState(true);
   const [apiError,    setApiError]    = React.useState('');
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       billing:     { line1: '', line2: '', city: '', county: '', postcode: '' },
       sameAddress: true,
     },
   });
+
+  React.useEffect(() => {
+    if (profile) {
+      reset({
+        billing: {
+          line1:    profile.billingAddress?.line1 || '',
+          line2:    profile.billingAddress?.line2 || '',
+          city:     profile.billingAddress?.city || '',
+          county:   profile.billingAddress?.county || '',
+          postcode: profile.billingAddress?.postcode || '',
+        },
+        supply: profile.supplyAddress ? {
+          line1:    profile.supplyAddress.line1 || '',
+          line2:    profile.supplyAddress.line2 || '',
+          city:     profile.supplyAddress.city || '',
+          county:   profile.supplyAddress.county || '',
+          postcode: profile.supplyAddress.postcode || '',
+        } : undefined,
+        sameAddress: profile.sameAddress ?? true,
+      });
+      setSameAddress(profile.sameAddress ?? true);
+    }
+  }, [profile, reset]);
 
   const onSubmit = async (data: FormData) => {
     setApiError('');

@@ -129,7 +129,7 @@ function TariffChips({
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Step4Screen() {
-  const { saveStep4, isLoading } = useProfileStore();
+  const { profile, saveStep4, isLoading } = useProfileStore();
 
   const [hasElec,  setHasElec]  = React.useState(true);
   const [hasGas,   setHasGas]   = React.useState(false);
@@ -146,6 +146,23 @@ export default function Step4Screen() {
   const [gasTariff, setGasTariff] = React.useState('unknown');
 
   const [error, setError] = React.useState('');
+
+  React.useEffect(() => {
+    if (profile?.energy) {
+      const { energy } = profile;
+      setHasElec(!!energy.mpan);
+      setHasGas(!!energy.mprn);
+      setHasSmart(energy.hasSmartMeter ?? false);
+      setMpan(energy.mpan || '');
+      setElecSup(energy.currentElectricitySupplier || '');
+      setElecKwh(energy.annualElectricityKwh?.toString() || '');
+      setElecTariff(energy.electricityTariffType || 'unknown');
+      setMprn(energy.mprn || '');
+      setGasSup(energy.currentGasSupplier || '');
+      setGasKwh(energy.annualGasKwh?.toString() || '');
+      setGasTariff(energy.gasTariffType || 'unknown');
+    }
+  }, [profile]);
 
   const handleContinue = async () => {
     if (!hasElec && !hasGas) {

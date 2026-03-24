@@ -78,13 +78,21 @@ function ToggleRow({
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Step5Screen() {
-  const { saveStep5, isLoading } = useProfileStore();
+  const { profile, saveStep5, isLoading } = useProfileStore();
 
   const [preferGreen, setPreferGreen] = React.useState(false);
   const [preferFixed, setPreferFixed] = React.useState(true);
   const [contactPref, setContactPref] = React.useState<ContactPref>('email');
   const [isComplete,  setIsComplete]  = React.useState(false);
   const [error,       setError]       = React.useState('');
+
+  React.useEffect(() => {
+    if (profile) {
+      setPreferGreen(profile.preferGreenEnergy ?? false);
+      setPreferFixed(profile.preferFixedTariff ?? true);
+      setContactPref(profile.contactPreference || 'email');
+    }
+  }, [profile]);
 
   // Stagger animations
   const c1  = useSharedValue(0);

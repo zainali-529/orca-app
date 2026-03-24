@@ -233,7 +233,7 @@ export default function BookConsultationScreen() {
       // ── Step 4: Payment sheet dismissed successfully ──────────
       // Webhook will update status to payment_confirmed asynchronously.
       // Navigate to detail screen to show status.
-      router.replace(`/(app)/consultations/${result.consultation._id}` as any);
+      router.replace(`/(app)/more/consultations/${result.consultation._id}` as any);
 
     } catch (e: any) {
       setError(e?.response?.data?.message ?? 'Something went wrong. Please try again.');
@@ -271,7 +271,7 @@ export default function BookConsultationScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 14, paddingBottom: 160 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >

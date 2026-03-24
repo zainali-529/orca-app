@@ -84,7 +84,7 @@ function SwitchCard({ sw }: { sw: EnergySwitch }) {
   const isObjected = sw.status === 'objected';
 
   return (
-    <Pressable onPress={() => router.push(`/(app)/switches/${sw._id}` as any)}>
+    <Pressable onPress={() => router.push(`/(app)/more/switches/${sw._id}` as any)}>
       <View className={[
         'bg-card rounded-card p-4 mb-2.5 border',
         isObjected     ? 'border-orange-500/30' :
@@ -336,7 +336,7 @@ export default function SwitchesIndexScreen() {
           data={switches}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => <SwitchCard sw={item} />}
-          contentContainerStyle={{ padding: 14, paddingBottom: 100, flexGrow: 1 }}
+          contentContainerStyle={{ padding: 14, paddingBottom: 80, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2272A6" />

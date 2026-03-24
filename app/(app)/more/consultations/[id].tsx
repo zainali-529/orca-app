@@ -369,7 +369,7 @@ export default function ConsultationDetailScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 14, paddingBottom: 100 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -506,7 +506,7 @@ export default function ConsultationDetailScreen() {
               )}
               {c.relatedSwitch && (
                 <Pressable
-                  onPress={() => router.push(`/(app)/switches/${(c.relatedSwitch as any)._id}` as any)}
+                  onPress={() => router.push(`/(app)/more/switches/${(c.relatedSwitch as any)._id}` as any)}
                   className="mt-3 bg-primary/8 border border-primary/20 rounded-banner p-3 flex-row items-center justify-between"
                 >
                   <Text className="text-sm font-semibold text-primary">
@@ -621,7 +621,7 @@ export default function ConsultationDetailScreen() {
           {/* ── Book another ── */}
           {['completed', 'cancelled', 'refunded', 'no_show'].includes(c.status) && (
             <Pressable
-              onPress={() => router.push('/(app)/consultations/book' as any)}
+              onPress={() => router.push('/(app)/more/consultations/book' as any)}
               className="bg-primary h-11 rounded-card items-center justify-center"
             >
               <Text style={{ color: '#ffffff' }} className="text-sm font-bold">

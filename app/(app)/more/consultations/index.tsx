@@ -58,7 +58,7 @@ function ConsultationCard({ item }: { item: Consultation }) {
   });
 
   return (
-    <Pressable onPress={() => router.push(`/(app)/consultations/${item._id}` as any)}>
+    <Pressable onPress={() => router.push(`/(app)/more/consultations/${item._id}` as any)}>
       <View className={[
         'bg-card rounded-card p-4 mb-2.5 border',
         isPay    ? 'border-orange-500/30' :
@@ -162,7 +162,7 @@ function EmptyState() {
         Book a session with our energy experts. We'll review your tariffs, contracts, and find you the best deals.
       </Text>
       <Pressable
-        onPress={() => router.push('/(app)/consultations/book' as any)}
+        onPress={() => router.push('/(app)/more/consultations/book' as any)}
         className="bg-primary rounded-card px-6 py-3"
       >
         <Text style={{ color: '#ffffff' }} className="text-sm font-bold">
@@ -185,7 +185,7 @@ function FAB() {
           scale.value = withSpring(0.92, { damping: 12 }, () => {
             scale.value = withSpring(1, { damping: 14 });
           });
-          router.push('/(app)/consultations/book' as any);
+          router.push('/(app)/more/consultations/book' as any);
         }}
         className="flex-row items-center gap-2 bg-primary rounded-full px-5 py-3.5"
         style={{
@@ -326,7 +326,7 @@ export default function ConsultationsIndexScreen() {
           data={consultations}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => <ConsultationCard item={item} />}
-          contentContainerStyle={{ padding: 14, paddingBottom: 120, flexGrow: 1 }}
+          contentContainerStyle={{ padding: 14, paddingBottom: 80, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2272A6" />

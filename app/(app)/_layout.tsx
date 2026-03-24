@@ -6,7 +6,7 @@ import * as React from 'react';
 import { ActivityIndicator, View, Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Zap, FileText, Users, Menu } from 'lucide-react-native';
+import { Home, Zap, FileText, FolderOpen, Menu } from 'lucide-react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 function TabBarButton({ onPress, onLongPress, isFocused, label, activeColor, inactiveColor, isDark, icon: Icon }: any) {
@@ -86,7 +86,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     index: Home,
     tariffs: Zap,
     quotes: FileText,
-    clients: Users,
+    documents: FolderOpen,
     more: Menu,
   };
 
@@ -202,9 +202,8 @@ export default function AppLayout() {
       <Tabs.Screen name="index" options={{ title: 'Dashboard' }} />
       <Tabs.Screen name="tariffs" options={{ title: 'Tariffs' }} />
       <Tabs.Screen name="quotes" options={{ title: 'Quotes' }} />
-      <Tabs.Screen name="clients" options={{ title: 'Clients' }} />
+      <Tabs.Screen name="documents" options={{ title: 'Documents' }} />
       <Tabs.Screen name="more" options={{ title: 'More' }} />
-      <Tabs.Screen name="documents" options={{ href: null }} />
     </Tabs>
   );
 }
