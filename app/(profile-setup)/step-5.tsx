@@ -3,15 +3,23 @@ import { Text } from '@/components/ui/text';
 import { useProfileStore } from '@/lib/store/profile.store';
 import { router } from 'expo-router';
 import * as React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View, Dimensions } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
   withTiming,
+  Easing,
+  useAnimatedProps,
+  interpolate,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Circle, Line } from 'react-native-svg';
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+const { width: W } = Dimensions.get('window');
 
 type ContactPref = 'email' | 'phone' | 'whatsapp';
 
@@ -75,6 +83,125 @@ function ToggleRow({
   );
 }
 
+// ─── Success Animation Component ──────────────────────────────────────────────
+
+function SuccessAnimation() {
+  const progress = useSharedValue(0);
+  const textOpacity = useSharedValue(0);
+  const textTranslateY = useSharedValue(20);
+
+  React.useEffect(() => {
+    progress.value = withTiming(1, { duration: 1800, easing: Easing.out(Easing.exp) });
+    textOpacity.value = withDelay(800, withTiming(1, { duration: 600 }));
+    textTranslateY.value = withDelay(800, withSpring(0, { damping: 14 }));
+  }, []);
+
+  const circleProps = useAnimatedProps(() => {
+    const length = 2 * Math.PI * 44; // r=44
+    return {
+      strokeDashoffset: length - length * Math.min(progress.value * 2, 1), // animate 0 to 0.5 of total time
+    };
+  });
+
+  const checkProps = useAnimatedProps(() => {
+    const length = 52; // approx length of checkmark
+    const p = Math.max(0, (progress.value - 0.4) * 2.5); // animate from 0.4 to 0.8
+    return {
+      strokeDashoffset: length - length * Math.min(p, 1),
+    };
+  });
+
+  const bgStyle = useAnimatedStyle(() => {
+    const rawScale = interpolate(progress.value, [0, 0.3], [0, 1]);
+    const rawOpacity = interpolate(progress.value, [0, 0.2], [0, 1]);
+    return {
+      transform: [{ scale: Math.min(Math.max(rawScale, 0), 1) }],
+      opacity: Math.min(Math.max(rawOpacity, 0), 1),
+    };
+  });
+
+  const textStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+    transform: [{ translateY: textTranslateY.value }],
+  }));
+
+  // Burst particles
+  const burstProgress = useSharedValue(0);
+  React.useEffect(() => {
+    burstProgress.value = withDelay(600, withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }));
+  }, []);
+
+  return (
+    <View className="flex-1 bg-background items-center justify-center p-8">
+      <View className="items-center justify-center mb-6" style={{ width: 140, height: 140 }}>
+        {/* Burst Lines */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i * Math.PI * 2) / 8;
+          const lineStyle = useAnimatedStyle(() => {
+            const distance = interpolate(burstProgress.value, [0, 1], [40, 75]);
+            const opacity = interpolate(burstProgress.value, [0, 0.2, 1], [0, 1, 0]);
+            return {
+              position: 'absolute',
+              opacity,
+              transform: [
+                { translateX: Math.cos(angle) * distance },
+                { translateY: Math.sin(angle) * distance },
+                { rotate: `${(angle * 180) / Math.PI}deg` },
+              ],
+            };
+          });
+          return (
+            <Animated.View key={i} style={lineStyle}>
+              <View style={{ width: 12, height: 4, borderRadius: 2, backgroundColor: '#3D9DD4' }} />
+            </Animated.View>
+          );
+        })}
+
+        {/* Background tint circle */}
+        <Animated.View 
+          style={[bgStyle, { position: 'absolute', width: 88, height: 88, borderRadius: 44, backgroundColor: 'rgba(34, 114, 166, 0.1)' }]} 
+        />
+
+        <Svg width="92" height="92" viewBox="0 0 92 92">
+          {/* Animated Circle */}
+          <AnimatedCircle
+            cx="46"
+            cy="46"
+            r="44"
+            fill="none"
+            stroke="#2272A6"
+            strokeWidth="4"
+            strokeDasharray={2 * Math.PI * 44}
+            animatedProps={circleProps}
+            strokeLinecap="round"
+            transform="rotate(-90 46 46)"
+          />
+          {/* Animated Checkmark */}
+          <AnimatedPath
+            d="M28 48 l12 12 l24 -24"
+            fill="none"
+            stroke="#2272A6"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="52"
+            animatedProps={checkProps}
+          />
+        </Svg>
+      </View>
+
+      <Animated.View style={textStyle} className="items-center">
+        <Text className="text-2xl font-bold text-brand dark:text-brand-fg text-center mb-2.5" style={{ fontFamily: 'Poppins-Bold' }}>
+          Profile Complete!
+        </Text>
+        <Text className="text-sm leading-relaxed text-center text-[#4A6A82] dark:text-brand-fg-muted font-sans">
+          Taking you to your dashboard…
+        </Text>
+      </Animated.View>
+    </View>
+  );
+}
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function Step5Screen() {
@@ -114,7 +241,7 @@ export default function Step5Screen() {
     if (isComplete) {
       successOpacity.value = withTiming(1, { duration: 300 });
       successScale.value   = withSpring(1, { damping: 12, stiffness: 80 });
-      const t = setTimeout(() => router.replace('/(app)'), 1800);
+      const t = setTimeout(() => router.replace('/(app)'), 2500);
       return () => clearTimeout(t);
     }
   }, [isComplete]);
@@ -142,41 +269,7 @@ export default function Step5Screen() {
   // ── Success screen ────────────────────────────────────────────────────────
 
   if (isComplete) {
-    return (
-      <View className="flex-1 bg-background items-center justify-center p-8">
-        <Animated.View style={ss} className="items-center">
-
-          {/* Success circle
-              w-22 h-22 = 88px  (Tailwind default › 22 × 4)
-              bg-primary/13 = 13% opacity  (config › opacity.13)
-              border-primary = brand blue                            */}
-          <View
-            className="w-22 h-22 rounded-full bg-primary/13 border-2 border-primary items-center justify-center mb-5"
-          >
-            <Svg width="40" height="40" viewBox="0 0 24 24">
-              <Path
-                d="M4 12l5 5L20 7"
-                fill="none"
-                stroke="#2272A6"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          </View>
-
-          {/* text-2xl = 24px  (config › fontSize.2xl) */}
-          <Text className="text-2xl font-bold text-brand dark:text-brand-fg text-center mb-2.5">
-            Profile Complete!
-          </Text>
-          {/* text-sm = 14px, leading-relaxed ≈ 22px lh  (Tailwind default) */}
-          <Text className="text-sm leading-relaxed text-center text-[#4A6A82] dark:text-brand-fg-muted font-sans">
-            Taking you to your dashboard…
-          </Text>
-
-        </Animated.View>
-      </View>
-    );
+    return <SuccessAnimation />;
   }
 
   // ── Main screen ───────────────────────────────────────────────────────────

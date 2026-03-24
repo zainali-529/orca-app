@@ -8,6 +8,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useProfileStore } from '@/lib/store/profile.store';
 
 interface SetupHeaderProps {
   currentStep: number;
@@ -82,13 +83,21 @@ export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }
     width: `${progressWidth.value}%`,
   }));
 
+  const { onboardingStatus } = useProfileStore();
+  const isEditMode = !!onboardingStatus?.completedAt;
+
   const handleBack = () => {
     if (onBack) { onBack(); return; }
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace('/(profile-setup)/step-1');
+      router.replace(isEditMode ? '/(app)/more' : '/(profile-setup)/step-1');
     }
+  };
+
+  const handleCancel = () => {
+    // Navigate back to More directly
+    router.replace('/(app)/more');
   };
 
   return (
@@ -96,18 +105,26 @@ export function SetupHeader({ currentStep, totalSteps, title, subtitle, onBack }
     // pt-14 = 56px, pb-8 = 32px, px-6 = 24px  (Tailwind defaults)
     <View className="bg-brand px-6 pt-14 pb-8">
 
-      {/* Back button */}
-      <Pressable
-        onPress={handleBack}
-        hitSlop={12}
-        className="flex-row items-center gap-1.5 mb-5"
-      >
-        <Svg width="16" height="16" viewBox="0 0 24 24">
-          <Path d="M15 18l-6-6 6-6" fill="none" stroke={B.fgMuted}
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </Svg>
-        <Text style={{ color: B.fgMuted, fontSize: 14, fontFamily: 'Poppins' }}>Back</Text>
-      </Pressable>
+      {/* Top Row: Back & Cancel */}
+      <View className="flex-row items-center justify-between mb-5">
+        <Pressable
+          onPress={handleBack}
+          hitSlop={12}
+          className="flex-row items-center gap-1.5"
+        >
+          <Svg width="16" height="16" viewBox="0 0 24 24">
+            <Path d="M15 18l-6-6 6-6" fill="none" stroke={B.fgMuted}
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </Svg>
+          <Text style={{ color: B.fgMuted, fontSize: 14, fontFamily: 'Poppins' }}>Back</Text>
+        </Pressable>
+
+        {isEditMode && (
+          <Pressable onPress={handleCancel} hitSlop={12}>
+            <Text style={{ color: B.fgMuted, fontSize: 14, fontFamily: 'Poppins', fontWeight: '500' }}>Cancel</Text>
+          </Pressable>
+        )}
+      </View>
 
       {/* Step dots row */}
       <View className="flex-row items-center gap-1.5 mb-5">

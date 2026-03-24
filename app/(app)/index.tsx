@@ -77,49 +77,6 @@ const fmt = {
 };
 
 // ─────────────────────────────────────────────────────────────────
-// PROFILE COMPLETION RING
-// ─────────────────────────────────────────────────────────────────
-
-function CompletionRing({ percent }: { percent: number }) {
-  const SIZE = 44;
-  const STROKE = 3.5;
-  const R = (SIZE - STROKE) / 2;
-  const CIRC = 2 * Math.PI * R;
-  const dash = (percent / 100) * CIRC;
-
-  const color =
-    percent >= 80 ? '#2DD4A0' :
-    percent >= 50 ? '#2272A6' : '#F59E0B';
-
-  return (
-    <View style={{ width: SIZE, height: SIZE, position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ position: 'absolute' }}>
-        {/* Track */}
-        <Circle
-          cx={SIZE / 2} cy={SIZE / 2} r={R}
-          stroke="rgba(255,255,255,0.15)"
-          strokeWidth={STROKE}
-          fill="none"
-        />
-        {/* Progress */}
-        <Circle
-          cx={SIZE / 2} cy={SIZE / 2} r={R}
-          stroke={color}
-          strokeWidth={STROKE}
-          fill="none"
-          strokeDasharray={`${dash} ${CIRC - dash}`}
-          strokeDashoffset={CIRC / 4}
-          strokeLinecap="round"
-        />
-      </Svg>
-      <Text style={{ fontSize: 10, fontWeight: '700', color: '#F0F8FF' }}>
-        {percent}%
-      </Text>
-    </View>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────
 // SECTION HEADER
 // ─────────────────────────────────────────────────────────────────
 
@@ -363,7 +320,7 @@ const ALERT_STYLES = {
 };
 
 function AlertCard({ alert, index }: { alert: DashboardAlert; index: number }) {
-  const s = ALERT_STYLES[alert.severity];
+  const s = ALERT_STYLES[alert.severity] || ALERT_STYLES.info; // Fallback to info if severity is missing or invalid
   return (
     <Animated.View entering={FadeInDown.delay(index * 70).springify()}>
       <Pressable
@@ -585,22 +542,47 @@ function PipelineCard({
     <Animated.View entering={FadeInDown.delay(d).springify()}>
       <Pressable onPress={() => router.push(route as any)}>
         <View
-          className="bg-card rounded-card p-3.5 border border-border"
-          style={{ width: 130 }}
+          className="bg-card rounded-card p-4 border border-border justify-between"
+          style={{ 
+            width: 140, 
+            height: 140, // Fixed height to ensure consistency
+            shadowColor: '#2272A6',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
         >
-          <Text style={{ fontSize: 22 }} className="mb-2">{icon}</Text>
-          <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted mb-1" numberOfLines={1}>
-            {title}
-          </Text>
-          <Text className="text-2xl font-bold text-brand dark:text-brand-fg">{primary}</Text>
-          <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">{primaryLabel}</Text>
-          {secondary !== undefined && secondary > 0 && secondaryLabel && (
-            <View className="mt-1.5 bg-brand-teal/10 rounded-md px-1.5 py-0.5 self-start">
-              <Text className="text-xs font-bold text-brand-teal">
-                {secondary} {secondaryLabel}
-              </Text>
+          {/* Top Section: Icon & Title */}
+          <View>
+            <View className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 items-center justify-center mb-2">
+              <Text style={{ fontSize: 18 }}>{icon}</Text>
             </View>
-          )}
+            <Text className="text-xs font-semibold text-brand dark:text-brand-fg mb-0.5" numberOfLines={1}>
+              {title}
+            </Text>
+          </View>
+
+          {/* Bottom Section: Stats & Badges */}
+          <View>
+            <View className="flex-row items-baseline gap-1.5 mb-1">
+              <Text className="text-2xl font-bold text-brand dark:text-brand-fg leading-7">{primary}</Text>
+              <Text className="text-xs font-sans text-[#4A6A82] dark:text-brand-fg-muted">{primaryLabel}</Text>
+            </View>
+
+            {/* Badge container with fixed min-height to prevent layout shift even if empty */}
+            <View style={{ minHeight: 22, justifyContent: 'center' }}>
+              {secondary !== undefined && secondary > 0 && secondaryLabel ? (
+                <View className="bg-brand-teal/10 border border-brand-teal/20 rounded-md px-2 py-0.5 self-start flex-row items-center gap-1">
+                  <View className="w-1.5 h-1.5 rounded-full bg-brand-teal" />
+                  <Text className="text-[10px] font-bold text-brand-teal uppercase tracking-wider">
+                    {secondary} {secondaryLabel}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+
         </View>
       </Pressable>
     </Animated.View>
@@ -1113,13 +1095,11 @@ function WelcomeEmpty({ firstName }: { firstName: string }) {
 function DashboardHeader({
   firstName,
   greeting,
-  completionPercent,
   highPriorityAlerts,
   onLogout,
 }: {
   firstName:         string;
   greeting:          string;
-  completionPercent: number;
   highPriorityAlerts: number;
   onLogout:          () => void;
 }) {
@@ -1136,52 +1116,36 @@ function DashboardHeader({
         </View>
 
         {/* Right side buttons */}
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-3">
           {/* Alerts bell */}
           {highPriorityAlerts > 0 && (
             <Pressable
               onPress={() => router.push('/(app)/documents' as any)}
-              className="w-10 h-10 rounded-xl bg-destructive/15 border border-destructive/25 items-center justify-center"
+              className="w-11 h-11 rounded-full bg-destructive/15 border border-destructive/25 items-center justify-center"
             >
-              <Text style={{ fontSize: 16 }}>🔔</Text>
+              <Text style={{ fontSize: 18 }}>🔔</Text>
               {/* Badge */}
               <View
                 className="absolute -top-1 -right-1 bg-destructive rounded-full items-center justify-center"
-                style={{ width: 16, height: 16 }}
+                style={{ width: 18, height: 18 }}
               >
-                <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>
+                <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>
                   {highPriorityAlerts > 9 ? '9+' : String(highPriorityAlerts)}
                 </Text>
               </View>
             </Pressable>
           )}
 
-          {/* Profile completion ring / logout */}
+          {/* Profile initials / logout */}
           <Pressable onPress={onLogout} hitSlop={8}>
-            <CompletionRing percent={completionPercent} />
+            <View className="w-11 h-11 rounded-full bg-primary/20 border border-primary/30 items-center justify-center">
+              <Text className="text-primary font-bold text-lg">
+                {firstName ? firstName.charAt(0).toUpperCase() : 'U'}
+              </Text>
+            </View>
           </Pressable>
         </View>
       </View>
-
-      {/* Profile completion hint */}
-      {completionPercent < 100 && (
-        <Pressable
-          onPress={() => router.push('/(profile-setup)/step-1' as any)}
-          className="bg-primary/15 border border-primary/25 rounded-xl px-3 py-2 flex-row items-center gap-2"
-        >
-          <View className="flex-1">
-            <View className="h-1.5 bg-primary/20 rounded-full overflow-hidden">
-              <View
-                className="h-full bg-primary rounded-full"
-                style={{ width: `${completionPercent}%` }}
-              />
-            </View>
-          </View>
-          <Text className="text-xs font-sans text-brand-fg-muted flex-shrink-0">
-            Profile {completionPercent}% — tap to complete
-          </Text>
-        </Pressable>
-      )}
     </View>
   );
 }
@@ -1249,7 +1213,6 @@ export default function DashboardScreen() {
       <DashboardHeader
         firstName={firstName}
         greeting={greetingMsg}
-        completionPercent={d?.profile.completionPercent ?? 0}
         highPriorityAlerts={d?.summary.highPriorityAlerts ?? 0}
         onLogout={handleLogout}
       />

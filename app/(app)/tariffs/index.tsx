@@ -14,7 +14,7 @@ import {
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-const FUEL_TYPES   = [{ id: 'dual', label: '⚡🔥 Dual' }, { id: 'electricity', label: '⚡ Electricity' }, { id: 'gas', label: '🔥 Gas' }];
+const FUEL_TYPES   = [{ id: 'dual', label: '⚡🔥 Dual' }, { id: 'electricity', label: '⚡ Elec' }, { id: 'gas', label: '🔥 Gas' }];
 const TARIFF_TYPES = [{ id: 'any', label: 'All' }, { id: 'fixed', label: 'Fixed' }, { id: 'variable', label: 'Variable' }, { id: 'flexible', label: 'Flexible' }];
 
 const TOP_TABS = [

@@ -8,6 +8,7 @@ import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Zap, FileText, FolderOpen, Menu } from 'lucide-react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { CommonActions, StackActions } from '@react-navigation/native';
 
 function TabBarButton({ onPress, onLongPress, isFocused, label, activeColor, inactiveColor, isDark, icon: Icon }: any) {
   // Use a faster spring configuration for snappier interactions
@@ -112,7 +113,27 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
         const onPress = () => {
           const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+
+          if (!event.defaultPrevented) {
+            if (isFocused) {
+              // If already focused, reset the stack to the top of this tab (index)
+              // Using try-catch to handle cases where it might not be a stack or already at top
+              try {
+                navigation.dispatch(StackActions.popToTop());
+              } catch (e) {
+                navigation.navigate(route.name, { screen: 'index' });
+              }
+            } else {
+              // When switching from another tab, we want to ensure we land on its root (index) 
+              // instead of a preserved sub-page. This fixes the issue where deep-links from
+              // Dashboard (like consultations) would "stick" in the More tab.
+              if (route.name === 'index') {
+                navigation.navigate('index');
+              } else {
+                navigation.navigate(route.name, { screen: 'index' });
+              }
+            }
+          }
         };
 
         const onLongPress = () => navigation.emit({ type: 'tabLongPress', target: route.key });
@@ -189,7 +210,7 @@ export default function AppLayout() {
     return <LoadingScreen />;
   }
 
-  if (!onboardingStatus.isCompleted) {
+  if (!onboardingStatus.isCompleted && !onboardingStatus.completedAt) {
     return <Redirect href="/(profile-setup)/step-1" />;
   }
 

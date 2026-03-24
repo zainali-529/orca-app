@@ -8,6 +8,7 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   View,
 } from 'react-native';
 import Animated, {
@@ -35,8 +36,8 @@ const FILTER_TABS: { id: QuoteRequestStatus | 'all'; label: string }[] = [
   { id: 'all',       label: 'All'       },
   { id: 'pending',   label: 'Pending'   },
   { id: 'contacted', label: 'Contacted' },
-  { id: 'completed', label: 'Completed' },
-  { id: 'cancelled', label: 'Cancelled' },
+  { id: 'completed', label: 'Done'      }, // Shortened from Completed
+  { id: 'cancelled', label: 'Cancel'    }, // Shortened from Cancelled
 ];
 
 // ─── Summary pill ─────────────────────────────────────────────────────────────
@@ -291,33 +292,36 @@ export default function QuotesIndexScreen() {
         </View>
 
         {/* Filter tabs */}
-        <View className="flex-row -mb-1">
-          {FILTER_TABS.map((tab) => {
-            const isActive = activeFilter === tab.id;
-            const count = summary && tab.id !== 'all'
-              ? summary[tab.id as QuoteRequestStatus]
-              : undefined;
-            return (
-              <Pressable
-                key={tab.id}
-                onPress={() => handleFilter(tab.id)}
-                className="flex-1 items-center py-2"
-              >
-                <Text
-                  className={[
-                    'text-xs',
-                    isActive ? 'font-semibold text-brand-fg' : 'font-sans text-brand-fg-muted',
-                  ].join(' ')}
-                  numberOfLines={1}
+        <View className="-mb-1 mt-2">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 0, gap: 16 }}>
+            {FILTER_TABS.map((tab) => {
+              const isActive = activeFilter === tab.id;
+              const count = summary && tab.id !== 'all'
+                ? summary[tab.id as QuoteRequestStatus]
+                : undefined;
+              return (
+                <Pressable
+                  key={tab.id}
+                  onPress={() => handleFilter(tab.id)}
+                  className="items-center py-2"
+                  style={{ minWidth: 60 }}
                 >
-                  {tab.label}{count !== undefined && count > 0 ? ` (${count})` : ''}
-                </Text>
-                {isActive && (
-                  <View className="absolute bottom-0 h-0.5 w-4/5 bg-brand-blue-bright rounded-sm" />
-                )}
-              </Pressable>
-            );
-          })}
+                  <Text
+                    className={[
+                      'text-xs',
+                      isActive ? 'font-semibold text-brand-fg' : 'font-sans text-brand-fg-muted',
+                    ].join(' ')}
+                    numberOfLines={1}
+                  >
+                    {tab.label}{count !== undefined && count > 0 ? ` (${count})` : ''}
+                  </Text>
+                  {isActive && (
+                    <View className="absolute bottom-0 h-0.5 w-full bg-brand-blue-bright rounded-sm" />
+                  )}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
 

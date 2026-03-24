@@ -70,7 +70,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={theme}>
         <StatusBar style={statusBarStyle} />
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
         <PortalHost />
       </ThemeProvider>
     </QueryClientProvider>
